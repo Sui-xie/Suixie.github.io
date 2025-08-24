@@ -1,6 +1,6 @@
 class Api{
     constructor(){
-        this.url = "https://183.131.51.178:";
+        this.url = "http://183.131.51.178:";
         this.port = "7878";
         this.token = localStorage.getItem('userToken') || null; // 内部存储token
         this.ApiList = {
@@ -298,4 +298,5 @@ class Api{
 export default function start(){
     window.$Api = new Api();
 }
+
 
