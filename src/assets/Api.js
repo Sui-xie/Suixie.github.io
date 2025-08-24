@@ -1,8 +1,9 @@
 class Api{
     constructor(){
-        this.url = "http://183.131.51.178:";
+        this.url = "https://cors.sh/http://183.131.51.178:";
         this.port = "7878";
         this.token = localStorage.getItem('userToken') || null; // 内部存储token
+        this.ApiKey = "temp_c92b19faf3cd3d6da1a958e1603d1ab0";
         this.ApiList = {
             "test":"/status",
             "sendCode":"/genMailCode",
@@ -34,10 +35,11 @@ class Api{
             const response = await fetch(`${this.url}${this.port}${this.ApiList.sendCode}?mail=${encodeURIComponent(mail)}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-cors-api-key': this.ApiKey // 使用初始化块中声明的API密钥
                 }
             });
-            
+
             if (response.status === 200) {
                 const data = await response.json();
                 if (data.status === "success") {
@@ -76,7 +78,8 @@ class Api{
             const response = await fetch(`${this.url}${this.port}${this.ApiList.login}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-cors-api-key': this.ApiKey // 使用初始化块中声明的API密钥
                 },
                 body: JSON.stringify({
                     type: "username",
@@ -84,7 +87,7 @@ class Api{
                     password: password
                 })
             });
-            
+
             if (response.status === 200) {
                 const data = await response.json();
                 if (data.status === "success") {
@@ -166,10 +169,11 @@ class Api{
             const response = await fetch(`${this.url}${this.port}${this.ApiList.register}?${params}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-cors-api-key': this.ApiKey // 使用初始化块中声明的API密钥
                 }
             });
-            
+
             const data = await response.json();
             if (response.status === 200 && data.status === "success") {
                 // 如果注册接口也返回token，保存到本地存储
@@ -208,10 +212,11 @@ class Api{
             const response = await fetch(`${this.url}${this.port}${this.ApiList.recover}?username=${encodeURIComponent(account)}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-cors-api-key': this.ApiKey // 使用初始化块中声明的API密钥
                 }
             });
-            
+
             if (response.status === 200) {
                 const data = await response.json();
                 if (data.status === "success") {
@@ -252,16 +257,17 @@ class Api{
                 reason: "No token available"
             };
         }
-        
+
         try {
             // 发送GET请求进行签到
             const response = await fetch(`${this.url}${this.port}${this.ApiList.sign}?username=${encodeURIComponent(account)}&token=${encodeURIComponent(this.token)}`, {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'x-cors-api-key': this.ApiKey // 使用初始化块中声明的API密钥
                 }
             });
-            
+
             if (response.status === 200) {
                 const data = await response.json();
                 if (data.status === "success") {
@@ -298,5 +304,3 @@ class Api{
 export default function start(){
     window.$Api = new Api();
 }
-
-
