@@ -1,1 +1,0 @@
-import{_ as o,c as r,a as n,j as s,k as a,l,F as c,e as _,i as u}from"./index-S0QH5-0V.js";const d={};function f(i,e){const t=l("router-link");return _(),r(c,null,[e[1]||(e[1]=n("h1",null,"功能暂未开放",-1)),s(t,{to:"/"},{default:a(()=>e[0]||(e[0]=[u("回到首页",-1)])),_:1,__:[0]})],64)}const p=o(d,[["render",f]]);export{p as default};
