@@ -1,0 +1,347 @@
+.register-container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+
+.register-container.no-border {
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+}
+
+.progress-bar {
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #409eff;
+  transition: width 0.3s ease;
+}
+
+.form-container {
+  position: relative;
+  min-height: 400px;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.form-step {
+  padding: 20px;
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.slide-in {
+  animation-name: slideIn;
+}
+
+.slide-out {
+  animation-name: slideOut;
+}
+
+.slide-in-back {
+  animation-name: slideInBack;
+}
+
+.slide-out-back {
+  animation-name: slideOutBack;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideInBack {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutBack {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #555;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #409eff;
+  box-shadow: 0 0 5px rgba(64, 158, 255, 0.3);
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  flex-shrink: 0;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  min-height: 44px; /* 符合移动端触摸标准 */
+}
+
+.btn-prev {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.btn-prev:hover {
+  background-color: #e0e0e0;
+}
+
+.btn-next, .btn-submit {
+  background-color: #409eff;
+  color: white;
+}
+
+.btn-next:hover, .btn-submit:hover {
+  background-color: #337ecc;
+}
+
+.btn-next:disabled, .btn-submit:disabled {
+  background-color: #a0cfff;
+  cursor: not-allowed;
+}
+
+.btn-submit {
+  background-color: #67c23a;
+}
+
+.btn-submit:hover {
+  background-color: #529b2e;
+}
+
+.verification-hint {
+  font-size: 14px;
+  color: #999;
+  margin-top: 5px;
+}
+.btn-resend {
+  background-color: transparent;
+  color: #409eff;
+  border: 1px solid #409eff;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  min-height: 44px; /* 符合移动端触摸标准 */
+}
+
+.btn-resend:hover:not(:disabled) {
+  background-color: #ecf5ff;
+}
+
+.btn-resend:disabled {
+  color: #a0cfff;
+  border-color: #a0cfff;
+  cursor: not-allowed;
+}
+.password-hint {
+  font-size: 14px;
+  color: #f56565;
+  margin-top: 5px;
+}
+.verification-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.completion-message {
+  text-align: center;
+  padding: 20px;
+  background-color: #f0f9ff;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.completion-message p {
+  margin: 10px 0;
+  color: #333;
+}
+
+.completion-message p:first-child {
+  font-size: 18px;
+  font-weight: bold;
+  color: #67c23a;
+}
+
+.confirmation-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: bold;
+  color: #555;
+}
+
+.info-value {
+  color: #333;
+  text-align: right;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .register-container {
+    margin: 10px;
+    padding: 15px;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .form-container {
+    min-height: calc(100vh - 120px);
+    max-height: none;
+  }
+
+  .form-step {
+    min-height: auto;
+    padding: 15px 0;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .input-group {
+    margin-bottom: 15px;
+  }
+
+  input {
+    font-size: 16px; /* 防止iOS缩放 */
+    padding: 15px;
+  }
+
+  .btn {
+    padding: 15px 20px;
+    font-size: 16px;
+    flex: 1;
+    margin: 0 5px;
+  }
+
+  .button-group {
+    margin-top: 20px;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 0;
+  }
+
+  .info-label {
+    margin-bottom: 5px;
+  }
+
+  .info-value {
+    text-align: left;
+    word-break: break-all;
+  }
+
+  .verification-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-resend {
+    margin-top: 15px;
+    padding: 15px;
+    text-align: center;
+  }
+
+  .confirmation-info {
+    padding: 15px;
+  }
+}
