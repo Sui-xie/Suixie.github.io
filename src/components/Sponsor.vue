@@ -21,6 +21,7 @@
         <div class="qrcode-item">
           <div class="qrcode-header">
             <h3 class="fixed-title">{{ qrcodes[0].title }}</h3>
+            <div class="subtitle" v-if="qrcodes[0].subtitle">{{ qrcodes[0].subtitle }}</div>
           </div>
           <div class="qrcode-image-container">
             <img 
@@ -36,6 +37,7 @@
         <div class="qrcode-item">
           <div class="qrcode-header">
             <h3 class="fixed-title">{{ qrcodes[1].title }}</h3>
+            <div class="subtitle" v-if="qrcodes[1].subtitle">{{ qrcodes[1].subtitle }}</div>
           </div>
           <div class="qrcode-image-container">
             <img 
@@ -51,6 +53,7 @@
         <div class="qrcode-item">
           <div class="qrcode-header">
             <h3 class="fixed-title">{{ qrcodes[2].title }}</h3>
+            <div class="subtitle" v-if="qrcodes[2].subtitle">{{ qrcodes[2].subtitle }}</div>
           </div>
           <div class="qrcode-image-container">
             <img 
@@ -128,10 +131,10 @@ export default {
     const qrcodes = reactive([
       // 服务器文件路径配置，使用public目录下的qrcodes文件夹
       // 注意：lemon_qrcode.png文件不存在，将使用默认占位图
-      { title: '柠檬', image: null }, // 设为null以使用默认占位图
+      { title: '柠檬', image: null, subtitle: '打给柠檬的钱就当你是在请柠檬喝柠檬水了哈' }, // 设为null以使用默认占位图
       // 使用相对路径
-      { title: '鱼鱼', image: 'qrcodes/yuyu_qrcode.png' },
-      { title: 'ksang', image: 'qrcodes/ksang_qrcode.png' }
+      { title: '鱼鱼', image: 'qrcodes/yuyu_qrcode.png', subtitle: '鱼服全家桶、幽柠一服运营' },
+      { title: 'ksang', image: 'qrcodes/ksang_qrcode.png', subtitle: '网站运维,幽柠二服运营' }
     ]);
     
     // 固定的感谢信息
@@ -391,6 +394,20 @@ export default {
   padding: 0.5rem;
   text-align: center;
   transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 副标题样式 */
+.subtitle {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+  margin-top: 0.5rem;
+  padding: 0.25rem;
+  transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sponsor-container.dark-theme .subtitle {
+  color: #aaa;
 }
 
 .sponsor-container.dark-theme .fixed-title {
