@@ -30,8 +30,8 @@ export default {
     
     const suggestions = [
       { name: '系统主页', path: '/' },
-      { name: '用户注册', path: '/register' },
-      { name: '账户登录', path: '/login' }
+      { name: '账户登录', path: '/login' },
+      { name: '赞助我们', path: '/Sponsor' }
     ]
     
     const goToHome = () => {

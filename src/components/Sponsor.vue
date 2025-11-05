@@ -138,7 +138,7 @@ export default {
     ]);
     
     // 固定的感谢信息
-    const customMessage = ref('感谢您的支持与鼓励！');
+    const customMessage = ref('我们的贡献者为6块钱一个月，每个月的贡献都将用于维护和运营我们的服务器，感谢您的支持与鼓励！');
     
     // 图片加载错误处理函数
     const handleImageError = (index) => {
