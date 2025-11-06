@@ -1,8 +1,8 @@
-import {createRouter, createWebHashHistory, } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 const home = () => import('../components/home.vue')
 const register = () => import('../components/register.vue')
-const  login = () => import('../components/NewLogin.vue')
+const login = () => import('../components/NewLogin.vue')
 const recover = () => import('../components/recover.vue')
 const sign = () => import('../components/sign.vue')
 const bindCode = () => import('../components/bindCode.vue')

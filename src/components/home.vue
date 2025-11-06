@@ -30,7 +30,7 @@ const features = ref([
 
 // 导航到指定路径
 const navigateTo = (path: string) => {
-  router.push(path)
+  router.push(`/${path}`)
 }
 
 // 切换主题模式 - 添加扩散动效-虽然是没生效吧
