@@ -503,10 +503,17 @@ onUnmounted(() => {
   align-items: center;
   padding: 10px 20px;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* 认证按钮容器 */
-.auth-buttons {}
+.auth-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  max-width: 50%; /* 限制按钮容器最大宽度，防止在小屏幕上超出 */
+}
 
 /* 深色模式下的样式调整 */
 .home-container.dark-mode .logo-text {
@@ -515,10 +522,12 @@ onUnmounted(() => {
 
 /* 全局样式 */
 .home-container {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden; /* 防止页面滚动 */
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 80px 20px 20px;
   transition: background-color 0.3s ease, color 0.3s ease;
+  box-sizing: border-box;
 }
 
 .home-container.dark-mode {
@@ -630,6 +639,9 @@ onUnmounted(() => {
   max-width: 800px;
   margin: 0 auto;
   padding: 20px 0;
+  height: calc(100vh - 120px); /* 计算内容区域高度，确保不超出视口 */
+  overflow-y: auto; /* 只在内容区域允许滚动 */
+  box-sizing: border-box;
 }
 
 /* 功能按钮网格 */
@@ -854,6 +866,20 @@ onUnmounted(() => {
     padding: 70px 15px 20px;
   }
   
+  .top-header {
+    padding: 10px 15px;
+  }
+  
+  .auth-buttons {
+    max-width: 60%; /* 在小屏幕上增加按钮容器宽度 */
+  }
+  
+  .header-btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    min-width: 60px; /* 减小按钮最小宽度 */
+  }
+  
   .features-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
@@ -878,13 +904,25 @@ onUnmounted(() => {
   }
   
   .top-header {
-    padding: 10px 15px;
+    padding: 10px;
+    flex-wrap: wrap; /* 允许头部内容换行 */
+  }
+  
+  .site-logo {
+    flex: 1; /* 让logo占据更多空间 */
+    min-width: 150px; /* 确保logo有最小宽度 */
+  }
+  
+  .auth-buttons {
+    max-width: 100%; /* 在极小屏幕上允许按钮容器占据全部宽度 */
+    flex-wrap: wrap;
+    justify-content: flex-end; /* 按钮右对齐 */
   }
   
   .header-btn {
-    padding: 6px 12px;
-    font-size: 0.9rem;
-    min-width: 64px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    min-width: 50px; /* 进一步减小按钮最小宽度 */
   }
   
   .features-grid {
