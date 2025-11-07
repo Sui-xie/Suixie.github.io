@@ -499,16 +499,14 @@ onUnmounted(() => {
 /* 顶部导航栏样式调整 */
 .top-header {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: center;
   padding: 10px 20px;
   width: 100%;
 }
 
-/* 确保认证按钮在右侧 */
-.auth-buttons {
-  margin-left: auto;
-}
+/* 认证按钮容器 */
+.auth-buttons {}
 
 /* 深色模式下的样式调整 */
 .home-container.dark-mode .logo-text {
@@ -537,7 +535,7 @@ onUnmounted(() => {
   z-index: 1001;
   padding: 15px 20px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -553,6 +551,7 @@ onUnmounted(() => {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .header-btn {
@@ -885,7 +884,7 @@ onUnmounted(() => {
   .header-btn {
     padding: 6px 12px;
     font-size: 0.9rem;
-    min-width: 70px;
+    min-width: 64px;
   }
   
   .features-grid {
@@ -930,6 +929,15 @@ onUnmounted(() => {
   .hitokoto-from {
     font-size: 0.8rem;
   }
+}
+
+/* 修复主页横向滚动问题 */
+:global(html), :global(body) {
+  overflow-x: hidden;
+}
+
+.home-container {
+  overflow-x: hidden;
 }
 
 /* 为触摸设备优化 */

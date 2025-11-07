@@ -1,5 +1,13 @@
 <template>
   <div class="cuddle-wrap">
+    <!-- 顶部右侧主题切换按钮（参考主页样式） -->
+    <button
+      class="theme-toggle"
+      @click="cycleThemePreference"
+      :title="themeToggleLabel"
+    >
+      {{ resolvedTheme === 'dark' ? '☀️' : '🌙' }}
+    </button>
     <section class="hero-card">
       <div class="scribble scribble-one" aria-hidden="true"></div>
       <div class="scribble scribble-two" aria-hidden="true"></div>
@@ -262,58 +270,66 @@ const handleBotSend = async () => {
 <style scoped>
 :global(:root) {
   color-scheme: light;
-  --body-bg: radial-gradient(circle at top, #f9f9f9 0%, #f2f2f2 40%, #e6e6e6 100%);
-  --text-primary: #0f0f0f;
-  --text-secondary: #3a3a3a;
-  --tag-bg: rgba(0, 0, 0, 0.08);
-  --hero-card-bg: linear-gradient(135deg, #111, #1c1c1c);
-  --hero-card-shadow: 0 35px 70px rgba(0, 0, 0, 0.55);
-  --button-primary-bg: #111;
-  --button-primary-text: #f7f7f7;
-  --button-ghost-bg: rgba(255, 255, 255, 0.2);
-  --button-ghost-border: rgba(0, 0, 0, 0.2);
-  --button-ghost-text: #0f0f0f;
-  --button-outline-border: rgba(0, 0, 0, 0.5);
-  --button-outline-text: #0f0f0f;
-  --qq-card-bg: rgba(0, 0, 0, 0.85);
-  --qq-card-border: rgba(255, 255, 255, 0.15);
-  --bot-lounge-bg: linear-gradient(145deg, #1a1a1a, #050505);
-  --bot-panel-bg: rgba(0, 0, 0, 0.75);
-  --bot-border: rgba(255, 255, 255, 0.1);
-  --bubble-assistant-bg: rgba(230, 230, 230, 0.8);
-  --bubble-user-bg: rgba(20, 20, 20, 0.8);
-  --bubble-user-text: #f5f5f5;
-  --faq-card-bg: rgba(255, 255, 255, 0.9);
-  --faq-border: rgba(0, 0, 0, 0.1);
-  --sync-tip-bg: rgba(255, 255, 255, 0.09);
+  /* 背景黑白配色（浅色） */
+  --body-bg: linear-gradient(180deg, #f0f4f8 0%, #e8f0f7 50%, #dde8f3 100%);
+  /* 文本与冷色系强调 - 提高对比度 */
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --tag-bg: rgba(168, 213, 255, 0.15);
+  /* 卡片与按钮（白色为主，冰蓝色和银灰色点缀） */
+  --hero-card-bg: linear-gradient(135deg, #ffffff, #f8fafc);
+  --hero-card-shadow: 0 35px 70px rgba(168, 213, 255, 0.25);
+  --button-primary-bg: #a8d5ff;
+  --button-primary-text: #1a202c;
+  --button-ghost-bg: rgba(232, 240, 247, 0.25);
+  --button-ghost-border: rgba(168, 213, 255, 0.35);
+  --button-ghost-text: #1a202c;
+  --button-outline-border: rgba(168, 213, 255, 0.6);
+  --button-outline-text: #1a202c;
+  /* 组件背景与边框（冰蓝色和银灰色系） */
+  --qq-card-bg: rgba(255, 255, 255, 0.85);
+  --qq-card-border: rgba(168, 213, 255, 0.25);
+  --bot-lounge-bg: linear-gradient(145deg, #f8fafc, #f0f4f8);
+  --bot-panel-bg: rgba(255, 255, 255, 0.75);
+  --bot-border: rgba(168, 213, 255, 0.2);
+  --bubble-assistant-bg: rgba(200, 230, 255, 0.85);
+  --bubble-user-bg: rgba(168, 213, 255, 0.8);
+  --bubble-user-text: #1a202c;
+  --faq-card-bg: rgba(255, 255, 255, 0.92);
+  --faq-border: rgba(168, 213, 255, 0.15);
+  --sync-tip-bg: rgba(168, 213, 255, 0.15);
 }
 
 :global([data-theme='dark']) {
   color-scheme: dark;
-  --body-bg: radial-gradient(circle at top, #020202 0%, #050505 45%, #0a0a0a 100%);
-  --text-primary: #f3f3f3;
-  --text-secondary: #c1c1c1;
-  --tag-bg: rgba(255, 255, 255, 0.08);
-  --hero-card-bg: linear-gradient(135deg, #050505, #151515);
-  --hero-card-shadow: 0 35px 70px rgba(0, 0, 0, 0.8);
-  --button-primary-bg: #f0f0f0;
-  --button-primary-text: #050505;
-  --button-ghost-bg: rgba(255, 255, 255, 0.15);
-  --button-ghost-border: rgba(255, 255, 255, 0.25);
-  --button-ghost-text: #f5f5f5;
-  --button-outline-border: rgba(255, 255, 255, 0.4);
-  --button-outline-text: #f5f5f5;
-  --qq-card-bg: rgba(255, 255, 255, 0.08);
-  --qq-card-border: rgba(255, 255, 255, 0.25);
-  --bot-lounge-bg: linear-gradient(145deg, #0f0f0f, #010101);
-  --bot-panel-bg: rgba(255, 255, 255, 0.08);
-  --bot-border: rgba(255, 255, 255, 0.2);
-  --bubble-assistant-bg: rgba(30, 30, 30, 0.8);
-  --bubble-user-bg: rgba(240, 240, 240, 0.85);
-  --bubble-user-text: #050505;
-  --faq-card-bg: rgba(10, 10, 10, 0.85);
-  --faq-border: rgba(255, 255, 255, 0.18);
-  --sync-tip-bg: rgba(255, 255, 255, 0.25);
+  /* 背景黑白配色（深色） */
+  --body-bg: linear-gradient(180deg, #0a1929 0%, #0f172a 50%, #1e293b 100%);
+  /* 文本与冷色系强调 - 优化对比度 */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --tag-bg: rgba(168, 213, 255, 0.12);
+  /* 卡片与按钮（深色为主，冰蓝色和银灰色点缀） */
+  --hero-card-bg: linear-gradient(135deg, #0f172a, #1e293b);
+  --hero-card-shadow: 0 35px 70px rgba(168, 213, 255, 0.15);
+  --button-primary-bg: #4a90e2;
+  --button-primary-text: #ffffff;
+  --button-ghost-bg: rgba(232, 240, 247, 0.12);
+  --button-ghost-border: rgba(168, 213, 255, 0.25);
+  --button-ghost-text: #f8fafc;
+  --button-outline-border: rgba(168, 213, 255, 0.5);
+  --button-outline-text: #f8fafc;
+  /* 组件背景与边框（冰蓝色和银灰色系） */
+  --qq-card-bg: rgba(30, 41, 59, 0.8);
+  --qq-card-border: rgba(168, 213, 255, 0.35);
+  --bot-lounge-bg: linear-gradient(145deg, #1e293b, #0f172a);
+  --bot-panel-bg: rgba(30, 41, 59, 0.8);
+  --bot-border: rgba(168, 213, 255, 0.25);
+  --bubble-assistant-bg: rgba(30, 41, 59, 0.75);
+  --bubble-user-bg: rgba(168, 213, 255, 0.85);
+  --bubble-user-text: #0a1929;
+  --faq-card-bg: rgba(30, 41, 59, 0.88);
+  --faq-border: rgba(168, 213, 255, 0.18);
+  --sync-tip-bg: rgba(168, 213, 255, 0.25);
 }
 
 :global(body) {
@@ -329,7 +345,7 @@ const handleBotSend = async () => {
   max-width: 1080px;
   margin: 0 auto;
   padding: 40px 20px 80px;
-  color: #eaf0ff;
+  color: var(--text-primary);
 }
 
 .hero-card {
@@ -357,13 +373,13 @@ const handleBotSend = async () => {
 .scribble-one {
   top: -40px;
   right: -30px;
-  background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 40 Q120 0 220 50 T220 180 Q140 230 20 180 T20 40Z' fill='none' stroke='%239bc4ff' stroke-width='12' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 40 Q120 0 220 50 T220 180 Q140 230 20 180 T20 40Z' fill='none' stroke='%23a8d5ff' stroke-width='12' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 .scribble-two {
   bottom: -70px;
   left: -50px;
-  background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 120 Q70 10 120 120 T225 120' fill='none' stroke='%2378b2ff' stroke-width='14' stroke-linecap='round' stroke-dasharray='16 14'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='240' height='240' viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 120 Q70 10 120 120 T225 120' fill='none' stroke='%23c8e6ff' stroke-width='14' stroke-linecap='round' stroke-dasharray='16 14'/%3E%3C/svg%3E");
 }
 
 .hero-copy {
@@ -374,7 +390,7 @@ const handleBotSend = async () => {
 .eyebrow {
   font-size: 0.9rem;
   letter-spacing: 0.2em;
-  color: rgba(215, 230, 255, 0.7);
+  color: var(--text-secondary);
   margin-bottom: 12px;
 }
 
@@ -459,9 +475,9 @@ const handleBotSend = async () => {
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  border: 6px solid rgba(255, 255, 255, 0.55);
+  border: 6px solid rgba(168, 213, 255, 0.55);
   object-fit: cover;
-  box-shadow: 0 15px 40px rgba(8, 15, 50, 0.5);
+  box-shadow: 0 15px 40px rgba(168, 213, 255, 0.3);
 }
 
 .mini-stats {
@@ -473,7 +489,7 @@ const handleBotSend = async () => {
 }
 
 .mini-stats li {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(232, 240, 247, 0.15);
   border-radius: 20px;
   padding: 12px 18px;
   text-align: center;
@@ -494,25 +510,25 @@ const handleBotSend = async () => {
   padding: 16px 20px;
   box-shadow: inset 0 0 0 2px var(--qq-card-border);
   text-align: center;
-  color: var(--button-primary-text);
+  color: var(--text-primary);
 }
 
 .qq-card p {
   margin: 0;
   font-size: 0.85rem;
   letter-spacing: 0.2em;
-  color: rgba(216, 231, 255, 0.7);
+  color: var(--text-secondary);
 }
 
 .qq-card strong {
   display: block;
   font-size: 1.8rem;
   margin: 6px 0;
-  color: var(--button-primary-text);
+  color: var(--text-primary);
 }
 
 .qq-card small {
-  color: rgba(215, 232, 255, 0.8);
+  color: var(--text-secondary);
 }
 
 .bot-lounge {
@@ -588,7 +604,7 @@ const handleBotSend = async () => {
 
 .bubble.typing p {
   font-style: italic;
-  color: rgba(13, 35, 75, 0.7);
+  color: var(--text-secondary);
 }
 
 .bot-input {
@@ -607,19 +623,19 @@ const handleBotSend = async () => {
 }
 
 .bot-input input::placeholder {
-  color: rgba(128, 128, 128, 0.7);
+  color: var(--text-secondary);
 }
 
 .bot-hint {
   font-size: 0.8rem;
-  color: rgba(227, 238, 255, 0.7);
+  color: var(--text-secondary);
 }
 
 .faq-shelf {
   margin-top: 50px;
   padding: 32px;
   border-radius: 32px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--faq-card-bg);
   background-size: 200% 200%;
   animation: auroraShift 16s ease-in-out infinite;
   border: 3px solid var(--faq-border);
@@ -632,13 +648,13 @@ const handleBotSend = async () => {
   position: absolute;
   inset: 10px;
   border-radius: 28px;
-  border: 1px dashed rgba(129, 161, 236, 0.5);
+  border: 1px dashed rgba(168, 213, 255, 0.5);
   pointer-events: none;
 }
 
 .faq-intro h2 {
   margin: 0 0 8px;
-  color: #0f1d3a;
+  color: var(--text-primary);
 }
 
 .faq-list {
@@ -649,13 +665,14 @@ const handleBotSend = async () => {
 }
 
 .faq-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--faq-card-bg);
   border-radius: 20px;
   padding: 18px;
   box-shadow: inset 0 0 0 2px var(--faq-border);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  color: var(--text-primary);
 }
 
 .text-link {
@@ -702,5 +719,35 @@ const handleBotSend = async () => {
   100% {
     background-position: 60% 60%;
   }
+}
+
+/* 顶部右侧主题切换按钮样式（与主页风格一致） */
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  background-color: #e9ecef;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.06) rotate(4deg);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+}
+
+:global([data-theme='dark']) .theme-toggle {
+  background-color: #343a40;
+  color: #f8f9fa;
 }
 </style>
