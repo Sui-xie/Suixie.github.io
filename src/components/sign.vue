@@ -1,4 +1,7 @@
 <script>
+import { useTheme } from '../composables/useTheme.js'
+const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
+
 export default {
   name: 'Sign',
   data() {
@@ -90,6 +93,14 @@ export default {
 
 <template>
   <div class="register-container no-border" :class="animationClass">
+    <!-- 主题切换按钮 -->
+    <button
+      class="theme-toggle fixed"
+      @click="cycleThemePreference"
+      :title="themeToggleLabel"
+    >
+      {{ themeIcon }}
+    </button>
     <div class="form-container">
       <div :class="['form-step', animationClass]">
         <h2>每日签到</h2>
@@ -143,13 +154,13 @@ export default {
 .completion-message p:first-child {
   font-size: 20px;
   font-weight: bold;
-  color: #67c23a;
+  color: var(--success-color);
   margin-bottom: 15px;
 }
 
 .completion-message p {
   font-size: 16px;
-  color: #666;
+  color: var(--text-muted);
 }
 
 /* 添加滑出动画 */
@@ -214,13 +225,13 @@ export default {
 }
 
 .sign-button.sign-success {
-  border-color: #67c23a;
-  color: #67c23a;
+  border-color: var(--success-color);
+  color: var(--success-color);
 }
 
 .sign-button.sign-error {
-  border-color: #f56c6c;
-  color: #f56c6c;
+  border-color: var(--error-color);
+  color: var(--error-color);
 }
 </style>
 

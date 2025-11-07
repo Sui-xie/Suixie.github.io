@@ -1,0 +1,322 @@
+/* 全局主题CSS变量定义 */
+
+/* 浅色主题变量 */
+:root {
+  color-scheme: light;
+  
+  /* 背景颜色 */
+  --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --card-bg: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.9);
+  --input-bg: #ffffff;
+  --modal-bg: #ffffff;
+  
+  /* 文本颜色 */
+  --text-primary: #1a202c;
+  --text-secondary: #4a5568;
+  --text-muted: #666;
+  --text-hint: #999;
+  
+  /* 边框颜色 */
+  --border-color: #ddd;
+  --border-light: #e0e0e0;
+  --border-hover: #409eff;
+  
+  /* 按钮颜色 */
+  --btn-primary-bg: #409eff;
+  --btn-primary-hover: #337ecc;
+  --btn-primary-disabled: #a0cfff;
+  --btn-secondary-bg: #f5f5f5;
+  --btn-secondary-hover: #e0e0e0;
+  --btn-success-bg: #67c23a;
+  --btn-success-hover: #529b2e;
+  --btn-ghost-bg: rgba(232, 240, 247, 0.25);
+  --btn-ghost-border: rgba(168, 213, 255, 0.35);
+  --btn-outline-border: rgba(168, 213, 255, 0.6);
+  
+  /* 链接颜色 */
+  --link-color: #409eff;
+  --link-hover: #337ecc;
+  
+  /* 状态颜色 */
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --error-color: #f56c6c;
+  --info-color: #909399;
+  
+  /* 阴影 */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.15);
+  
+  /* 特殊颜色 */
+  --logo-color: #10a250;
+  --accent-color: #a8d5ff;
+  --tag-bg: rgba(168, 213, 255, 0.15);
+  
+  /* 过渡动画 */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* 深色主题变量 */
+[data-theme='dark'] {
+  color-scheme: dark;
+  
+  /* 背景颜色 */
+  --body-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --card-bg: rgba(30, 30, 30, 0.9);
+  --header-bg: rgba(23, 23, 23, 0.8);
+  --input-bg: rgba(40, 40, 40, 0.9);
+  --modal-bg: #2d2d2d;
+  
+  /* 文本颜色 */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #aaa;
+  --text-hint: #999;
+  
+  /* 边框颜色 */
+  --border-color: #444;
+  --border-light: #555;
+  --border-hover: #64b5f6;
+  
+  /* 按钮颜色 */
+  --btn-primary-bg: #357abd;
+  --btn-primary-hover: #2968a6;
+  --btn-primary-disabled: #1e4a7a;
+  --btn-secondary-bg: #333;
+  --btn-secondary-hover: #444;
+  --btn-success-bg: #529b2e;
+  --btn-success-hover: #4a8c2a;
+  --btn-ghost-bg: rgba(232, 240, 247, 0.12);
+  --btn-ghost-border: rgba(168, 213, 255, 0.25);
+  --btn-outline-border: rgba(168, 213, 255, 0.5);
+  
+  /* 链接颜色 */
+  --link-color: #64b5f6;
+  --link-hover: #42a5f5;
+  
+  /* 状态颜色 */
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --error-color: #ef5350;
+  --info-color: #909399;
+  
+  /* 阴影 */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.4);
+  
+  /* 特殊颜色 */
+  --logo-color: #10a250;
+  --accent-color: #4a90e2;
+  --tag-bg: rgba(168, 213, 255, 0.12);
+}
+
+/* 兼容旧版dark-mode类 */
+.dark-mode {
+  /* 背景颜色 */
+  --body-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --card-bg: rgba(30, 30, 30, 0.9);
+  --header-bg: rgba(23, 23, 23, 0.8);
+  --input-bg: rgba(40, 40, 40, 0.9);
+  --modal-bg: #2d2d2d;
+  
+  /* 文本颜色 */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #aaa;
+  --text-hint: #999;
+  
+  /* 边框颜色 */
+  --border-color: #444;
+  --border-light: #555;
+  --border-hover: #64b5f6;
+  
+  /* 按钮颜色 */
+  --btn-primary-bg: #357abd;
+  --btn-primary-hover: #2968a6;
+  --btn-primary-disabled: #1e4a7a;
+  --btn-secondary-bg: #333;
+  --btn-secondary-hover: #444;
+  --btn-success-bg: #529b2e;
+  --btn-success-hover: #4a8c2a;
+  --btn-ghost-bg: rgba(232, 240, 247, 0.12);
+  --btn-ghost-border: rgba(168, 213, 255, 0.25);
+  --btn-outline-border: rgba(168, 213, 255, 0.5);
+  
+  /* 链接颜色 */
+  --link-color: #64b5f6;
+  --link-hover: #42a5f5;
+  
+  /* 状态颜色 */
+  --success-color: #67c23a;
+  --warning-color: #e6a23c;
+  --error-color: #ef5350;
+  --info-color: #909399;
+  
+  /* 阴影 */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 10px 25px rgba(0, 0, 0, 0.4);
+  
+  /* 特殊颜色 */
+  --logo-color: #10a250;
+  --accent-color: #4a90e2;
+  --tag-bg: rgba(168, 213, 255, 0.12);
+}
+
+/* 全局基础样式 */
+body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--body-bg);
+  color: var(--text-primary);
+  transition: background var(--transition-slow), color var(--transition-normal);
+  font-family: 'Fredoka', 'Baloo 2', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+/* 主题切换按钮基础样式 */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: 1.2rem;
+  min-width: 40px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+}
+
+.theme-toggle:hover {
+  border-color: var(--border-light);
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.06) rotate(4deg);
+}
+
+[data-theme='dark'] .theme-toggle:hover {
+  border-color: var(--border-light);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 固定定位的主题切换按钮 */
+.theme-toggle.fixed {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  background-color: #e9ecef;
+  color: #333;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+}
+
+[data-theme='dark'] .theme-toggle.fixed {
+  background-color: #343a40;
+  color: #f8f9fa;
+}
+
+/* 主题切换扩散动效 */
+.theme-toggle {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-ripple {
+  position: absolute;
+  border-radius: 50%;
+  width: 0;
+  height: 0;
+  background: currentColor;
+  opacity: 0.3;
+  transform: translate(-50%, -50%);
+  animation: ripple-expand 0.8s ease-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes ripple-expand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.3;
+  }
+  100% {
+    width: 500px;
+    height: 500px;
+    opacity: 0;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .theme-toggle.fixed {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+}
+/* Sponsor Page Styles */
+.sponsor-container {
+  background-color: var(--body-bg);
+  color: var(--text-primary);
+}
+
+.sponsor-container .content-wrapper {
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-lg);
+}
+
+.sponsor-container .back-button {
+  background-color: var(--btn-secondary-bg);
+  color: var(--text-primary);
+}
+
+.sponsor-container .back-button:hover {
+  background-color: var(--btn-secondary-hover);
+}
+
+.sponsor-container .theme-toggle {
+  background-color: var(--btn-secondary-bg);
+  color: var(--text-primary);
+}
+
+.sponsor-container .title {
+  color: var(--text-primary);
+}
+
+.sponsor-container .qrcode-item {
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.sponsor-container .fixed-title {
+  color: var(--text-primary);
+}
+
+.sponsor-container .subtitle {
+  color: var(--text-secondary);
+}
+
+.sponsor-container .qrcode-image-container {
+  border-color: var(--border-light);
+  background-color: #ffffff; /* Explicitly white for QR code background */
+}
+
+[data-theme='dark'] .sponsor-container .qrcode-image-container {
+    background-color: #ffffff; /* Keep QR code background white in dark mode */
+}
+
+.sponsor-container .fixed-message {
+  color: var(--text-secondary);
+}

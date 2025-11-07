@@ -1,5 +1,8 @@
 <script>
+import { useTheme } from '../composables/useTheme.js'
 import registerLogic from '/src/assets/register.js';
+
+const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
 
 export default {
   mixins: [registerLogic],
@@ -56,6 +59,14 @@ export default {
 
 <template>
   <div class="register-container">
+    <!-- 主题切换按钮 -->
+    <button
+      class="theme-toggle fixed"
+      @click="cycleThemePreference"
+      :title="themeToggleLabel"
+    >
+      {{ themeIcon }}
+    </button>
     <div class="progress-bar">
       <div 
         class="progress-fill" 

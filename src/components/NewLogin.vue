@@ -1,5 +1,13 @@
 <template>
   <div class="login-container">
+    <!-- 主题切换按钮 -->
+    <button
+      class="theme-toggle fixed"
+      @click="cycleThemePreference"
+      :title="themeToggleLabel"
+    >
+      {{ themeIcon }}
+    </button>
     <div class="login-card">
       <div class="progress-bar">
         <div
@@ -217,6 +225,10 @@
   </div>
 </template>
 
+<script setup>
+import { useTheme } from '../composables/useTheme.js'
+const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
+</script>
 <script src="../assets/NewLogin.js"></script>
 
 <style scoped src="../assets/NewLogin.css"></style>

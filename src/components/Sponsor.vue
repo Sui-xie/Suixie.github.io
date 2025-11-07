@@ -1,5 +1,5 @@
 <template>
-  <div class="sponsor-container" :class="{ 'dark-theme': isDarkMode }">
+  <div class="sponsor-container" :class="{ 'dark-theme': resolvedTheme === 'dark' }" style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
     <!-- 纯色背景 -->
     <div class="solid-background"></div>
     
@@ -10,8 +10,8 @@
       </button>
       
       <!-- 主题切换开关 -->
-      <button class="theme-toggle" @click="toggleTheme">
-        {{ isDarkMode ? '🌞' : '🌙' }}
+      <button class="theme-toggle" @click="cycleThemePreference">
+        {{ themeIcon }}
       </button>
       
       <h1 class="title">感谢您的支持</h1>
@@ -76,6 +76,7 @@
 <script>
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useTheme } from '@/composables/useTheme';
 
 export default {
   name: 'Sponsor',
@@ -90,55 +91,25 @@ export default {
   setup(props) {
     // 初始化路由
     const router = useRouter();
+    const { resolvedTheme, themeIcon, cycleThemePreference } = useTheme();
     
     // 返回主页的方法
     const goToHome = () => {
       router.push('/');
     };
     
-    // 主题模式状态
-    const isDarkMode = ref(false);
-    
     // 默认占位图片
     const defaultImage = ref('https://placehold.co/300x300?text=收款码');
     
-    // 检测系统主题
-    const checkSystemTheme = () => {
-      const prefersDark = window.matchMedia && 
-        window.matchMedia('(prefers-color-scheme: dark)').matches;
-      isDarkMode.value = prefersDark;
-    };
-    
-    // 手动切换主题
-    const toggleTheme = () => {
-      isDarkMode.value = !isDarkMode.value;
-    };
-    
-    // 监听系统主题变化
-    onMounted(() => {
-      checkSystemTheme();
-      
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      mediaQuery.addEventListener('change', checkSystemTheme);
-      
-      // 清理监听器
-      return () => {
-        mediaQuery.removeEventListener('change', checkSystemTheme);
-      };
-    });
-    
-    // 固定的收款码数据
+    // 初始化为空，将从API获取数据
     const qrcodes = reactive([
-      // 服务器文件路径配置，使用public目录下的qrcodes文件夹
-      // 注意：lemon_qrcode.png文件不存在，将使用默认占位图
-      { title: '柠檬', image: null, subtitle: '打给柠檬的钱就当你是在请柠檬喝柠檬水了哈' }, // 设为null以使用默认占位图
-      // 使用相对路径
-      { title: '鱼鱼', image: 'qrcodes/yuyu_qrcode.png', subtitle: '鱼服全家桶、幽柠一服运营' },
-      { title: 'ksang', image: 'qrcodes/ksang_qrcode.png', subtitle: '网站运维,幽柠二服运营' }
+      { title: '加载中...', image: null, subtitle: '' },
+      { title: '加载中...', image: null, subtitle: '' },
+      { title: '加载中...', image: null, subtitle: '' }
     ]);
     
-    // 固定的感谢信息
-    const customMessage = ref('我们的贡献者为6块钱一个月，每个月的贡献都将用于维护和运营我们的服务器，感谢您的支持与鼓励！');
+    // 初始化为空，将从API获取数据
+    const customMessage = ref('正在加载感谢信息...');
     
     // 图片加载错误处理函数
     const handleImageError = (index) => {
@@ -146,8 +117,39 @@ export default {
       qrcodes[index].image = null; // 设置为null，这样会使用默认图片
     };
     
-    // 注意：如果需要从服务器获取实际的二维码路径，可以在这里添加API调用
-      // 例如：onMounted(() => fetchQrCodePaths());
+    // 从服务器获取赞助信息
+    const fetchSponsorData = async () => {
+      try {
+        const data = await window.$Api.getSponsor();
+        if (data.status === 200) {
+          // 更新二维码信息
+          if (data.qrcodes && data.qrcodes.length > 0) {
+            // 使用获取的数据替换现有的qrcodes数组
+            qrcodes.splice(0, qrcodes.length, ...data.qrcodes);
+          }
+          // 更新感谢信息
+          if (data.customMessage) {
+            customMessage.value = data.customMessage;
+          }
+        } else {
+          throw new Error(data.reason || 'Failed to load sponsor data');
+        }
+      } catch (error) {
+        console.error('获取赞助信息失败:', error);
+        customMessage.value = '加载赞助信息失败，请稍后重试。';
+        // 可选：为所有二维码设置错误状态
+        qrcodes.forEach(qr => {
+          qr.title = '加载失败';
+          qr.subtitle = '请检查网络连接';
+          qr.image = null;
+        });
+      }
+    };
+
+    // 在组件挂载后调用API
+    onMounted(() => {
+      fetchSponsorData();
+    });
     
     return {
         qrcodes,
@@ -155,68 +157,32 @@ export default {
         defaultImage,
         handleImageError,
         goToHome,
-        isDarkMode,
-        toggleTheme
+        resolvedTheme,
+        themeIcon,
+        cycleThemePreference
       };
   }
 };
 </script>
 
 <style scoped>
-.sponsor-container {
-  position: relative;
-  min-height: 100vh;
-  width: 100%;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  background-color: #f8f9fa; /* 默认浅色背景 */
-  /* 硬件加速 */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-}
+/* The scoped styles have been moved to the global theme.css file. */
+/* You can adjust animations and transitions here if needed. */
 
-.sponsor-container.dark-theme {
-  background-color: #121212; /* 深色背景 */
-}
-
-/* 纯色背景 */
-.solid-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  /* 优化背景渲染 */
-  will-change: background-color;
-  transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sponsor-container:not(.dark-theme) .solid-background {
-  background-color: #f8f9fa;
-}
-
-.sponsor-container.dark-theme .solid-background {
-  background-color: #121212;
-}
-
-  @keyframes float {
-    0%, 100% {
-      transform: translate(0, 0) scale(1);
-    }
-    25% {
-      transform: translate(20px, -20px) scale(1.1);
-    }
-    50% {
-      transform: translate(0, 0) scale(1.2);
-    }
-    75% {
-      transform: translate(-20px, 20px) scale(1.1);
-    }
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
   }
+  25% {
+    transform: translate(20px, -20px) scale(1.1);
+  }
+  50% {
+    transform: translate(0, 0) scale(1.2);
+  }
+  75% {
+    transform: translate(-20px, 20px) scale(1.1);
+  }
+}
 
 .content-wrapper {
   position: relative;
@@ -225,10 +191,8 @@ export default {
   max-width: 1200px;
   padding: 2rem;
   padding-top: 6rem; /* 为顶部按钮留出更多空间 */
-  background-color: white;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: 
+  transition:
     background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -237,35 +201,20 @@ export default {
   -webkit-transform: translateZ(0);
 }
 
-/* 主题切换时添加微妙的缩放效果 */
-.sponsor-container.dark-theme .content-wrapper {
-  background-color: #1e1e1e;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-.sponsor-container.dark-theme .content-wrapper {
-  background-color: #1e1e1e;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
 .back-button {
   position: absolute;
   top: 1rem;
   left: 1rem;
   padding: 0.75rem 1.5rem;
-  background-color: #6c757d; /* 单色按钮背景 */
-  color: white;
   border: none;
   border-radius: 25px;
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: 
+  transition:
     background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  /* 减少硬件消耗的阴影 */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   /* 硬件加速 */
   transform: translateZ(0);
@@ -275,7 +224,6 @@ export default {
 .back-button:hover {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
-  background-color: #5a6268; /* 深色悬停效果 */
 }
 
 /* 主题切换开关 */
@@ -289,8 +237,7 @@ export default {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  background-color: #e9ecef;
-  transition: 
+  transition:
     background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -301,15 +248,8 @@ export default {
   /* 硬件加速 */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-  /* 主题切换时的焦点指示器 */
   outline: none;
-  /* 优化渲染 */
   will-change: transform;
-}
-
-.sponsor-container.dark-theme .theme-toggle {
-  background-color: #343a40;
-  color: #f8f9fa;
 }
 
 .theme-toggle:hover {
@@ -330,22 +270,12 @@ export default {
   font-size: 2.5rem;
   margin-bottom: 2rem;
   margin-top: 1rem; /* 为返回按钮留出空间 */
-  color: #333;
-  transition: 
+  transition:
     color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
     transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   /* 硬件加速 */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-}
-
-/* 微妙的标题效果 */
-.sponsor-container.dark-theme .title {
-  color: #f8f9fa;
-}
-
-.sponsor-container.dark-theme .title {
-  color: #f8f9fa;
 }
 
 .qrcode-container {
@@ -356,24 +286,16 @@ export default {
 }
 
 .qrcode-item {
-  background-color: #f8f9fa;
   border-radius: 15px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: 
+  transition:
     transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   /* 硬件加速 */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-  /* 减少不必要的硬件消耗 */
   contain: layout style;
-}
-
-.sponsor-container.dark-theme .qrcode-item {
-  background-color: #2d2d2d;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .qrcode-item:hover {
@@ -389,7 +311,6 @@ export default {
 .fixed-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
   margin: 0;
   padding: 0.5rem;
   text-align: center;
@@ -399,45 +320,28 @@ export default {
 /* 副标题样式 */
 .subtitle {
   font-size: 0.9rem;
-  color: #666;
   text-align: center;
   margin-top: 0.5rem;
   padding: 0.25rem;
   transition: color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sponsor-container.dark-theme .subtitle {
-  color: #aaa;
-}
-
-.sponsor-container.dark-theme .fixed-title {
-  color: #f8f9fa;
-}
-
 .qrcode-image-container {
   width: 100%;
   height: 250px;
-  border: 2px solid #e0e0e0;
   border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  background-color: white;
   box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
-  transition: 
+  transition:
     background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   /* 硬件加速 */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-}
-
-.sponsor-container.dark-theme .qrcode-image-container {
-  border-color: #444;
-  background-color: #333;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .qrcode-image {
@@ -464,20 +368,15 @@ export default {
 .fixed-message {
   font-size: 1.3rem;
   line-height: 1.6;
-  color: #555;
   margin: 0;
   padding: 1rem 0;
   font-style: italic;
-  transition: 
+  transition:
     color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   /* 硬件加速 */
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
-}
-
-.sponsor-container.dark-theme .fixed-message {
-  color: #ccc;
 }
 
 /* 响应式设计 */

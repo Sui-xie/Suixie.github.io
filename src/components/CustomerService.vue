@@ -2,11 +2,11 @@
   <div class="cuddle-wrap">
     <!-- 顶部右侧主题切换按钮（参考主页样式） -->
     <button
-      class="theme-toggle"
+      class="theme-toggle fixed"
       @click="cycleThemePreference"
       :title="themeToggleLabel"
     >
-      {{ resolvedTheme === 'dark' ? '☀️' : '🌙' }}
+      {{ themeIcon }}
     </button>
     <section class="hero-card">
       <div class="scribble scribble-one" aria-hidden="true"></div>
@@ -113,8 +113,10 @@
 <script setup>
 import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from '../composables/useTheme.js'
 
 const router = useRouter()
+const { themePreference, resolvedTheme, themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
 const manualServiceQQ = ref('2124007978')
 
 const openManualService = () => {
@@ -148,64 +150,6 @@ const botConfig = {
 }
 
 const syncedDestinations = computed(() => 'QQ 私信 · 工单草稿 · 服务器看板')
-
-const THEME_STORAGE_KEY = 'ks_support_theme_pref'
-const themePreference = ref(localStorage.getItem(THEME_STORAGE_KEY) || 'system')
-const systemTheme = ref('light')
-let mediaQuery
-
-const resolvedTheme = computed(() =>
-  themePreference.value === 'system' ? systemTheme.value : themePreference.value
-)
-
-const applyTheme = (value) => {
-  document.documentElement.setAttribute('data-theme', value)
-}
-
-const handleSystemThemeChange = (event) => {
-  systemTheme.value = event.matches ? 'dark' : 'light'
-}
-
-onMounted(() => {
-  if (window.matchMedia) {
-    mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    systemTheme.value = mediaQuery.matches ? 'dark' : 'light'
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleSystemThemeChange)
-    } else if (mediaQuery.addListener) {
-      mediaQuery.addListener(handleSystemThemeChange)
-    }
-  }
-  applyTheme(resolvedTheme.value)
-})
-
-onBeforeUnmount(() => {
-  if (mediaQuery) {
-    if (mediaQuery.removeEventListener) {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange)
-    } else if (mediaQuery.removeListener) {
-      mediaQuery.removeListener(handleSystemThemeChange)
-    }
-  }
-})
-
-watch(resolvedTheme, (value) => {
-  applyTheme(value)
-})
-
-const cycleThemePreference = () => {
-  const order = ['system', 'light', 'dark']
-  const index = order.indexOf(themePreference.value)
-  const nextPreference = order[(index + 1) % order.length]
-  themePreference.value = nextPreference
-  localStorage.setItem(THEME_STORAGE_KEY, nextPreference)
-}
-
-const themeToggleLabel = computed(() => {
-  if (themePreference.value === 'system') return '主题：跟随系统'
-  if (themePreference.value === 'light') return '主题：浅色'
-  return '主题：深色'
-})
 
 const callSupportBot = async (messages) => {
   const payload = {
@@ -722,31 +666,15 @@ const handleBotSend = async () => {
 }
 
 /* 顶部右侧主题切换按钮样式（与主页风格一致） */
-.theme-toggle {
-  position: fixed;
-  top: 16px;
-  right: 16px;
+.theme-toggle.fixed {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  border: none;
   font-size: 1.4rem;
-  cursor: pointer;
   background-color: #e9ecef;
   color: #333;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
-.theme-toggle:hover {
-  transform: scale(1.06) rotate(4deg);
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
-}
-
-:global([data-theme='dark']) .theme-toggle {
+[data-theme='dark'] .theme-toggle.fixed {
   background-color: #343a40;
   color: #f8f9fa;
 }

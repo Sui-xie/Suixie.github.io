@@ -11,6 +11,7 @@ class Api{
             "login":"/login",
             "recover":"/recover",
             "sign":"/sign",
+            "getSponsor": "/getSponsor",
         }
         console.info(`已挂载路由：${this.url}${this.port}，已录入Api列表：${Object.keys(this.ApiList)}`)
     }
@@ -300,6 +301,42 @@ class Api{
             };
         }
     }
+   async getSponsor() {
+       try {
+           const response = await fetch(`${this.url}${this.port}${this.ApiList.getSponsor}`, {
+               method: 'GET',
+               headers: {
+                   'Content-Type': 'application/json',
+                   'x-cors-api-key': this.ApiKey
+               }
+           });
+
+           if (response.status === 200) {
+               const data = await response.json();
+               if (data.status === "success") {
+                   return {
+                       status: 200,
+                       ...data.data
+                   };
+               } else {
+                   throw {
+                       status: response.status,
+                       reason: data.reason || "Failed to fetch sponsor data"
+                   };
+               }
+           } else {
+               throw {
+                   status: response.status,
+                   reason: "Unknown error"
+               };
+           }
+       } catch (error) {
+           throw {
+               status: 0,
+               reason: "Network error or server unavailable"
+           };
+       }
+   }
 }
 export default function start(){
     window.$Api = new Api();

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from '../composables/useTheme.js'
 import '../assets/register.css'
 
 const router = useRouter()
-const isDarkMode = ref(false) // 深色模式控制
+const { themePreference, resolvedTheme, themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
 const showHitokoto = ref(true) // 控制一言窗口显示
 const hitokotoCollapsed = ref(false) // 控制一言窗口是否收纳于左侧
 
@@ -33,7 +34,7 @@ const navigateTo = (path: string) => {
   router.push(`/${path}`)
 }
 
-// 切换主题模式 - 添加扩散动效-虽然是没生效吧
+// 切换主题模式 - 添加扩散动效
 const toggleDarkMode = (event: MouseEvent) => {
   // 获取点击位置
   const target = event.currentTarget as HTMLElement;
@@ -48,32 +49,13 @@ const toggleDarkMode = (event: MouseEvent) => {
   ripple.style.top = `${y}px`;
   target.appendChild(ripple);
   
-  // 切换主题状态
-  isDarkMode.value = !isDarkMode.value;
+  // 切换主题
+  cycleThemePreference();
   
-  // 动画结束后更新主题并清理
-  setTimeout(() => {
-    updateTheme();
-    ripple.addEventListener('animationend', () => {
-      ripple.remove();
-    });
-  }, 300); // 等待动画扩散到一定程度再改变主题
-}
-
-// 更新主题
-const updateTheme = () => {
-  if (isDarkMode.value) {
-    document.documentElement.classList.add('dark-mode');
-  } else {
-    document.documentElement.classList.remove('dark-mode');
-  }
-}
-
-// 检测系统主题偏好
-const detectSystemTheme = () => {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  isDarkMode.value = prefersDark
-  updateTheme()
+  // 清理动画元素
+  ripple.addEventListener('animationend', () => {
+    ripple.remove();
+  });
 }
 
 // 解析服务器info字符串
@@ -275,12 +257,6 @@ const openHitokoto = () => {
 }
 
 onMounted(() => {
-    // 检测系统主题
-    detectSystemTheme()
-    
-    // 监听系统主题变化
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', detectSystemTheme)
-    
     // 获取一言数据
     fetchHitokoto()
     
@@ -295,15 +271,10 @@ onMounted(() => {
       clearInterval(statusInterval)
     })
   })
-
-// 清理事件监听器
-onUnmounted(() => {
-  window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', detectSystemTheme)
-})
 </script>
 
 <template>
-  <div class="home-container" :class="{ 'dark-mode': isDarkMode }">
+  <div class="home-container">
     <!-- 顶部导航栏 -->
     <header class="top-header">
       <!-- 网站Logo -->
@@ -315,8 +286,8 @@ onUnmounted(() => {
         <div class="logo-subtitle">网站98%为ai创作</div>
       </div>
       <div class="auth-buttons">
-        <button class="header-btn theme-toggle" @click="toggleDarkMode" :title="isDarkMode ? '切换到浅色模式' : '切换到深色模式'">
-          {{ isDarkMode ? '☀️' : '🌙' }}
+        <button class="header-btn theme-toggle" @click="toggleDarkMode" :title="themeToggleLabel">
+          {{ themeIcon }}
         </button>
         <button class="header-btn login-btn" @click="navigateTo('login')">登录</button>
         <button class="header-btn register-btn" @click="navigateTo('register')">注册</button>
@@ -524,15 +495,10 @@ onUnmounted(() => {
 .home-container {
   height: 100vh;
   overflow: hidden; /* 防止页面滚动 */
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--body-bg);
   padding: 80px 20px 20px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background var(--transition-slow), color var(--transition-normal);
   box-sizing: border-box;
-}
-
-.home-container.dark-mode {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #eee;
 }
 
 /* 头部样式 */
@@ -545,15 +511,10 @@ onUnmounted(() => {
   padding: 15px 20px;
   display: flex;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--header-bg);
   backdrop-filter: blur(10px);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.home-container.dark-mode .top-header {
-  background: rgba(23, 23, 23, 0.8);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
 }
 
 .auth-buttons {
@@ -582,56 +543,31 @@ onUnmounted(() => {
 }
 
 .theme-toggle:hover {
-  border-color: #ddd;
+  border-color: var(--border-light);
   background: rgba(255, 255, 255, 0.1);
 }
 
-.home-container.dark-mode .theme-toggle:hover {
-  border-color: #444;
-  background: rgba(255, 255, 255, 0.05);
-}
-
 .login-btn {
-  background: #4A90E2;
+  background: var(--btn-primary-bg);
   color: white;
 }
 
 .login-btn:hover {
-  background: #357ABD;
+  background: var(--btn-primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
 }
 
 .register-btn {
-  background: white;
-  color: #333;
-  border: 1px solid #ddd;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .register-btn:hover {
-  background: #f8f9fa;
+  background: var(--btn-secondary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* 深色模式下的按钮样式 */
-.home-container.dark-mode .login-btn {
-  background: #357ABD;
-}
-
-.home-container.dark-mode .login-btn:hover {
-  background: #2968A6;
-}
-
-.home-container.dark-mode .register-btn {
-  background: #333;
-  color: #eee;
-  border: 1px solid #555;
-}
-
-.home-container.dark-mode .register-btn:hover {
-  background: #444;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 /* 主要内容区域 */
@@ -658,10 +594,10 @@ onUnmounted(() => {
   padding: 30px 20px;
   border: none;
   border-radius: 16px;
-  background: white;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-lg);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -672,17 +608,7 @@ onUnmounted(() => {
 
 .feature-button:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.home-container.dark-mode .feature-button {
-  background: rgba(30, 30, 30, 0.9);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  color: #eee;
-}
-
-.home-container.dark-mode .feature-button:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-xl);
 }
 
 .feature-icon {
@@ -699,11 +625,7 @@ onUnmounted(() => {
   font-size: 1.2rem;
   font-weight: 500;
   margin: 0;
-  color: #333;
-}
-
-.home-container.dark-mode .feature-title {
-  color: #eee;
+  color: var(--text-primary);
 }
 
 /* 一言容器 - 用于控制整体布局 */
@@ -720,9 +642,9 @@ onUnmounted(() => {
 .hitokoto-window {
   width: 300px;
   max-width: 90%;
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-lg);
   padding: 15px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
@@ -747,7 +669,7 @@ onUnmounted(() => {
   left: 0;
   width: 40px;
   height: 40px;
-  background: white;
+  background: var(--card-bg);
   border-radius: 0 12px 12px 0;
   box-shadow: 2px 0 8px rgba(0,0,0,0.15);
   display: flex;
@@ -767,30 +689,8 @@ onUnmounted(() => {
 
 /* 按钮悬停效果 */
 .hitokoto-opener:hover {
-  background: #f8f9fa;
+  background: var(--btn-secondary-hover);
   transform: translateX(2px);
-}
-
-.home-container.dark-mode .hitokoto-window {
-  background: #2D2D2D;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-.home-container.dark-mode .hitokoto-window:hover {
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-
-.home-container.dark-mode .hitokoto-window.collapsed {
-  box-shadow: 2px 0 12px rgba(0,0,0,0.3);
-}
-
-.home-container.dark-mode .hitokoto-opener {
-  background: #2D2D2D;
-  color: #eee;
-}
-
-.home-container.dark-mode .hitokoto-opener:hover {
-  background: #3D3D3D;
 }
 
 
@@ -808,23 +708,15 @@ onUnmounted(() => {
 
 .hitokoto-text {
   margin: 0 0 8px 0;
-  color: #333;
+  color: var(--text-primary);
   font-style: italic;
-}
-
-.home-container.dark-mode .hitokoto-text {
-  color: #eee;
 }
 
 .hitokoto-from {
   margin: 0;
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-muted);
   text-align: right;
-}
-
-.home-container.dark-mode .hitokoto-from {
-  color: #aaa;
 }
 
 .hitokoto-close {
@@ -848,16 +740,7 @@ onUnmounted(() => {
 
 .hitokoto-close:hover {
   background: rgba(0,0,0,0.1);
-  color: #333;
-}
-
-.home-container.dark-mode .hitokoto-close {
-  color: #777;
-}
-
-.home-container.dark-mode .hitokoto-close:hover {
-  background: rgba(255,255,255,0.1);
-  color: #eee;
+  color: var(--text-primary);
 }
 
 /* 响应式设计 */
@@ -1022,36 +905,23 @@ onUnmounted(() => {
 .server-status-container {
   margin-top: 40px;
   padding: 20px;
-  background: white;
+  background: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.home-container.dark-mode .server-status-container {
-  background: rgba(30, 30, 30, 0.9);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
 }
 
 .server-status-title {
   font-size: 1.5rem;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
-}
-
-.home-container.dark-mode .server-status-title {
-  color: #eee;
 }
 
 .server-loading {
   text-align: center;
   padding: 20px;
-  color: #666;
-}
-
-.home-container.dark-mode .server-loading {
-  color: #aaa;
+  color: var(--text-muted);
 }
 
 .server-list {
@@ -1063,12 +933,8 @@ onUnmounted(() => {
 .server-item {
   padding: 15px;
   border-radius: 12px;
-  background: #f8f9fa;
-  transition: all 0.3s ease;
-}
-
-.home-container.dark-mode .server-item {
-  background: rgba(40, 40, 40, 0.9);
+  background: var(--btn-secondary-bg);
+  transition: all var(--transition-normal);
 }
 
 .server-item.online {
@@ -1096,11 +962,7 @@ onUnmounted(() => {
 .server-name {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #333;
-}
-
-.home-container.dark-mode .server-name {
-  color: #eee;
+  color: var(--text-primary);
 }
 
 .server-status-indicator {
@@ -1158,11 +1020,7 @@ onUnmounted(() => {
 
 .server-details {
   font-size: 0.95rem;
-  color: #666;
-}
-
-.home-container.dark-mode .server-details {
-  color: #aaa;
+  color: var(--text-muted);
 }
 
 .server-details-grid {
@@ -1195,25 +1053,17 @@ onUnmounted(() => {
 
 .detail-label {
   font-weight: 500;
-  color: #888;
+  color: var(--text-muted);
   flex-shrink: 0;
   margin-right: 8px;
   min-width: 50px;
 }
 
-.home-container.dark-mode .detail-label {
-  color: #999;
-}
-
 .detail-value {
   font-weight: 500;
-  color: #333;
-  transition: all 0.2s ease;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
   flex-shrink: 0;
-}
-
-.home-container.dark-mode .detail-value {
-  color: #eee;
 }
 
 /* 地图名称折叠样式 */
@@ -1237,28 +1087,16 @@ onUnmounted(() => {
   border-radius: 6px;
 }
 
-.home-container.dark-mode .map-expanded-container {
-  background: rgba(0, 0, 0, 0.2);
-}
-
 .map-expanded-title {
   font-size: 0.9rem;
-  color: #888;
+  color: var(--text-muted);
   margin-bottom: 5px;
-}
-
-.home-container.dark-mode .map-expanded-title {
-  color: #aaa;
 }
 
 .map-expanded-content {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   word-break: break-all;
-}
-
-.home-container.dark-mode .map-expanded-content {
-  color: #eee;
 }
 
 .map-name:hover {
@@ -1293,18 +1131,14 @@ onUnmounted(() => {
   animation: slideDown 0.3s ease-out;
 }
 
-.home-container.dark-mode .player-list {
-  background: rgba(0, 0, 0, 0.2);
-}
-
 .player-item {
   padding: 8px 12px;
   margin-bottom: 5px;
-  background: white;
+  background: var(--card-bg);
   border-radius: 6px;
   font-size: 0.9rem;
-  color: #333;
-  transition: all 0.2s ease;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1312,30 +1146,17 @@ onUnmounted(() => {
 
 .player-level {
   font-weight: 600;
-  color: #4A90E2;
+  color: var(--link-color);
   font-size: 0.85rem;
 }
 
 .player-level.unbound {
-  color: #f44336;
+  color: var(--error-color);
 }
 
 .player-name {
   flex: 1;
   word-break: break-all;
-}
-
-.home-container.dark-mode .player-item {
-  background: rgba(60, 60, 60, 0.9);
-  color: #eee;
-}
-
-.home-container.dark-mode .player-level {
-  color: #64b5f6;
-}
-
-.home-container.dark-mode .player-level.unbound {
-  color: #ef5350;
 }
 
 .player-item:last-child {
@@ -1347,27 +1168,18 @@ onUnmounted(() => {
   padding: 10px 20px;
   border: none;
   border-radius: 8px;
-  background: #4A90E2;
+  background: var(--btn-primary-bg);
   color: white;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   width: 100%;
 }
 
 .refresh-button:hover {
-  background: #357ABD;
+  background: var(--btn-primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
-}
-
-.home-container.dark-mode .refresh-button {
-  background: #357ABD;
-}
-
-.home-container.dark-mode .refresh-button:hover {
-  background: #2968A6;
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
 }
 
 @keyframes slideDown {
