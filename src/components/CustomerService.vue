@@ -23,9 +23,6 @@
         <div class="hero-buttons">
           <button class="btn primary" @click="openManualService">找我聊聊</button>
           <button class="btn ghost" @click="goHome">返回主页</button>
-          <button class="btn outline" @click="cycleThemePreference">
-            {{ themeToggleLabel }}
-          </button>
         </div>
       </header>
       <div class="hero-side">
