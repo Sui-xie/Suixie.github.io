@@ -5,7 +5,7 @@
   color-scheme: light;
   
   /* 背景颜色 */
-  --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --body-bg: #f5f7fa;
   --card-bg: #ffffff;
   --header-bg: rgba(255, 255, 255, 0.9);
   --input-bg: #ffffff;
@@ -66,7 +66,7 @@
   color-scheme: dark;
   
   /* 背景颜色 */
-  --body-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --body-bg: #1e293b;
   --card-bg: rgba(30, 30, 30, 0.9);
   --header-bg: rgba(23, 23, 23, 0.8);
   --input-bg: rgba(40, 40, 40, 0.9);
