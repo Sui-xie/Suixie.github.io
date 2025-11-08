@@ -226,9 +226,222 @@
 </template>
 
 <script setup>
-import { useTheme } from '../composables/useTheme.js'
-const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
+import { ref, reactive, onBeforeUnmount } from 'vue';
+import { useTheme } from '../composables/useTheme.js';
+
+const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme();
+
+const currentStep = ref(0);
+const loginMethod = ref(''); // 'account', 'email', 'qq'
+const loginForm = reactive({
+  username: '',
+  password: '',
+  email: '',
+  qq: '',
+  verificationCode: '',
+  rememberMe: false
+});
+const showPassword = ref(false);
+const isLoggingIn = ref(false);
+const animationClass = ref('');
+const countdown = ref(0);
+let timer = null;
+
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+};
+
+const isCurrentStepValid = () => {
+  if (currentStep.value === 2) {
+    if (loginMethod.value === 'account') {
+      return loginForm.username;
+    } else if (loginMethod.value === 'email') {
+      return loginForm.email;
+    } else if (loginMethod.value === 'qq') {
+      return loginForm.qq;
+    }
+  } else if (currentStep.value === 3 && loginMethod.value === 'account') {
+    return loginForm.password;
+  }
+  return true;
+};
+
+const getDisplayName = () => {
+  if (loginMethod.value === 'account') {
+    return loginForm.username;
+  } else if (loginMethod.value === 'email') {
+    return loginForm.email;
+  } else if (loginMethod.value === 'qq') {
+    return loginForm.qq;
+  }
+  return '';
+};
+
+const nextStep = () => {
+  if ((currentStep.value === 2 || (currentStep.value === 3 && loginMethod.value === 'account')) && !isCurrentStepValid()) {
+    showMessage('请填写完整信息');
+    return;
+  }
+
+  if (currentStep.value === 2 && loginMethod.value !== 'account') {
+    sendVerificationCode();
+  }
+
+  if ((currentStep.value === 3 && loginMethod.value !== 'account') || (currentStep.value === 4 && loginMethod.value === 'account')) {
+    console.log('验证验证码:', loginForm.verificationCode);
+  }
+
+  if (currentStep.value === 3 && loginMethod.value === 'account') {
+    handleLogin();
+    return;
+  }
+
+  if (currentStep.value === 3 && loginMethod.value !== 'account') {
+    handleLogin();
+    return;
+  }
+
+  if (loginMethod.value === 'account') {
+    if (currentStep.value === 2) {
+      animationClass.value = 'slide-out';
+      setTimeout(() => {
+        currentStep.value = 3;
+        animationClass.value = 'slide-in';
+        setTimeout(() => {
+          animationClass.value = '';
+        }, 300);
+      }, 300);
+      return;
+    }
+  }
+
+  if (currentStep.value < 5) {
+    animationClass.value = 'slide-out';
+    setTimeout(() => {
+      currentStep.value++;
+      animationClass.value = 'slide-in';
+      setTimeout(() => {
+        animationClass.value = '';
+      }, 300);
+    }, 300);
+  }
+};
+
+const prevStep = () => {
+  if (currentStep.value > 0) {
+    animationClass.value = 'slide-out-back';
+    setTimeout(() => {
+      currentStep.value--;
+      animationClass.value = 'slide-in-back';
+      setTimeout(() => {
+        animationClass.value = '';
+      }, 300);
+    }, 300);
+  }
+};
+
+const handleLogin = async () => {
+  isLoggingIn.value = true;
+
+  try {
+    if (loginMethod.value === 'account') {
+      const result = await window.$Api.login(loginForm.username, loginForm.password);
+      if (result.status === 200) {
+        animationClass.value = 'slide-out';
+        setTimeout(() => {
+          currentStep.value = 5;
+          animationClass.value = 'slide-in';
+          setTimeout(() => {
+            animationClass.value = '';
+          }, 300);
+        }, 300);
+      }
+    } else {
+      showMessage('此登录方式暂未开放');
+      return;
+    }
+  } catch (error) {
+    let errorMessage = '登录失败';
+    if (error.reason) {
+      errorMessage = error.reason;
+    }
+    showMessage(errorMessage);
+  } finally {
+    isLoggingIn.value = false;
+  }
+};
+
+const sendVerificationCode = () => {
+  if (countdown.value > 0) return;
+
+  if (loginMethod.value === 'email') {
+    console.log('发送验证码到邮箱:', loginForm.email);
+  } else if (loginMethod.value === 'qq') {
+    console.log('发送验证码到QQ邮箱:', loginForm.qq + '@qq.com');
+  } else if (loginMethod.value === 'account') {
+    console.log('发送验证码到账号绑定邮箱');
+  }
+
+  countdown.value = 60;
+  timer = setInterval(() => {
+    countdown.value--;
+    if (countdown.value <= 0) {
+      clearInterval(timer);
+    }
+  }, 1000);
+
+  showMessage('验证码已发送');
+};
+
+const onVerificationCodeInput = (e) => {
+  loginForm.verificationCode = e.target.value.replace(/\D/g, '');
+};
+
+const showMessage = (message, type = 'error') => {
+  const messageEl = document.createElement('div');
+  messageEl.innerText = message;
+  messageEl.style.cssText = `
+    position: fixed;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #333;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transition: top 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    min-width: 250px;
+    text-align: center;
+    font-weight: 500;
+    border-left: 4px solid ${type === 'success' ? '#67c23a' : '#f56565'};
+  `;
+
+  document.body.appendChild(messageEl);
+
+  setTimeout(() => {
+    messageEl.style.top = '20px';
+    messageEl.style.opacity = '1';
+  }, 10);
+
+  setTimeout(() => {
+    messageEl.style.top = '-60px';
+    messageEl.style.opacity = '0';
+    setTimeout(() => {
+      if (messageEl.parentNode) {
+        document.body.removeChild(messageEl);
+      }
+    }, 300);
+  }, 3000);
+};
+
+onBeforeUnmount(() => {
+  if (timer) {
+    clearInterval(timer);
+  }
+});
 </script>
-<script src="../assets/NewLogin.js"></script>
 
 <style scoped src="../assets/NewLogin.css"></style>
