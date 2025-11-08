@@ -2,9 +2,13 @@
 import { ref, reactive, computed, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from '../composables/useTheme.js';
+import { useApi } from '../plugins/api.js';
+import { useSnackbar } from '../composables/useSnackbar.js';
 
 const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme();
 const router = useRouter();
+const api = useApi();
+const { showMessage } = useSnackbar();
 
 const currentStep = ref(0);
 const formData = reactive({
@@ -36,65 +40,29 @@ const validateEmail = (email) => {
   return emailRegex.test(email);
 };
 
-const showMessage = (message) => {
-  const messageEl = document.createElement('div');
-  messageEl.innerText = message;
-  messageEl.style.cssText = `
-    position: fixed;
-    top: -60px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #fff;
-    color: #333;
-    padding: 16px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    transition: top 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
-    min-width: 250px;
-    text-align: center;
-    font-weight: 500;
-    border-left: 4px solid #409eff;
-  `;
-  document.body.appendChild(messageEl);
-  setTimeout(() => {
-    messageEl.style.top = '20px';
-    messageEl.style.opacity = '1';
-  }, 10);
-  setTimeout(() => {
-    messageEl.style.top = '-60px';
-    messageEl.style.opacity = '0';
-    setTimeout(() => {
-      if (messageEl.parentNode) {
-        document.body.removeChild(messageEl);
-      }
-    }, 300);
-  }, 3000);
-};
-
 const sendVerificationCode = async () => {
   if (countdown.value > 0) return;
   if (!validateEmail(formData.mail)) {
-    showMessage('邮箱格式不正确');
+    showMessage('\u90ae\u7bb1\u683c\u5f0f\u4e0d\u6b63\u786e', { type: 'warning' });
     return;
   }
   isLoading.value = true;
   try {
-    const result = await window.$Api.sendCode(formData.mail);
-    if (result.status === 200) {
-      countdown.value = 60;
-      timer = setInterval(() => {
-        countdown.value--;
-        if (countdown.value <= 0) {
-          clearInterval(timer);
-        }
-      }, 1000);
-      showMessage('验证码已发送，请查收邮箱');
+    await api.sendCode(formData.mail);
+    countdown.value = 60;
+    if (timer) {
+      clearInterval(timer);
     }
+    timer = window.setInterval(() => {
+      countdown.value--;
+      if (countdown.value <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+    showMessage('\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\uff0c\u8bf7\u67e5\u6536\u90ae\u7bb1', { type: 'success' });
   } catch (error) {
-    console.error('发送验证码失败:', error);
-    showMessage(error.reason || '发送验证码失败');
+    console.error('\u53d1\u9001\u9a8c\u8bc1\u7801\u5931\u8d25:', error);
+    showMessage(error.reason || error.message || '\u53d1\u9001\u9a8c\u8bc1\u7801\u5931\u8d25', { type: 'error' });
   } finally {
     isLoading.value = false;
   }
@@ -102,23 +70,28 @@ const sendVerificationCode = async () => {
 
 const sendQqVerificationCode = async () => {
   if (qqCountdown.value > 0) return;
-  const qqEmail = formData.qq + '@qq.com';
+  if (!formData.qq) {
+    showMessage('\u8bf7\u5148\u586b\u5199QQ\u53f7', { type: 'warning' });
+    return;
+  }
+  const qqEmail = `${formData.qq}@qq.com`;
   isLoading.value = true;
   try {
-    const result = await window.$Api.sendCode(qqEmail);
-    if (result.status === 200) {
-      qqCountdown.value = 60;
-      qqTimer = setInterval(() => {
-        qqCountdown.value--;
-        if (qqCountdown.value <= 0) {
-          clearInterval(qqTimer);
-        }
-      }, 1000);
-      showMessage('验证码已发送至QQ邮箱，请查收');
+    await api.sendCode(qqEmail);
+    qqCountdown.value = 60;
+    if (qqTimer) {
+      clearInterval(qqTimer);
     }
+    qqTimer = window.setInterval(() => {
+      qqCountdown.value--;
+      if (qqCountdown.value <= 0) {
+        clearInterval(qqTimer);
+      }
+    }, 1000);
+    showMessage('\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\u81f3QQ\u90ae\u7bb1\uff0c\u8bf7\u67e5\u6536', { type: 'success' });
   } catch (error) {
-    console.error('发送QQ验证码失败:', error);
-    showMessage(error.reason || '发送QQ验证码失败');
+    console.error('\u53d1\u9001QQ\u9a8c\u8bc1\u7801\u5931\u8d25:', error);
+    showMessage(error.reason || error.message || '\u53d1\u9001QQ\u9a8c\u8bc1\u7801\u5931\u8d25', { type: 'error' });
   } finally {
     isLoading.value = false;
   }
@@ -197,22 +170,17 @@ const prevStep = () => {
 const handleSubmit = async () => {
   isLoading.value = true;
   try {
-    const result = await window.$Api.register(
+    await api.register(
       formData.account,
       formData.password,
       formData.verificationCode
     );
-    if (result.status === 200) {
-      showMessage('注册成功！');
-      currentStep.value = 7;
-    }
+    showMessage('\u6ce8\u518c\u6210\u529f！', { type: 'success' });
+    currentStep.value = 7;
   } catch (error) {
-    console.error('注册失败:', error);
-    if (error.status === 400) {
-      showMessage(`注册失败: ${error.reason}`);
-    } else {
-      showMessage(error.reason || '注册失败');
-    }
+    console.error('\u6ce8\u518c\u5931\u8d25:', error);
+    const reason = error.reason || error.message || '\u6ce8\u518c\u5931\u8d25';
+    showMessage(`\u6ce8\u518c\u5931\u8d25: ${reason}`, { type: 'error' });
   } finally {
     isLoading.value = false;
   }

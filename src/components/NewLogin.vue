@@ -228,8 +228,12 @@
 <script setup>
 import { ref, reactive, onBeforeUnmount } from 'vue';
 import { useTheme } from '../composables/useTheme.js';
+import { useApi } from '../plugins/api.js';
+import { useSnackbar } from '../composables/useSnackbar.js';
 
 const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme();
+const api = useApi();
+const { showMessage } = useSnackbar();
 
 const currentStep = ref(0);
 const loginMethod = ref(''); // 'account', 'email', 'qq'
@@ -345,7 +349,7 @@ const handleLogin = async () => {
 
   try {
     if (loginMethod.value === 'account') {
-      const result = await window.$Api.login(loginForm.username, loginForm.password);
+      const result = await api.login(loginForm.username, loginForm.password);
       if (result.status === 200) {
         animationClass.value = 'slide-out';
         setTimeout(() => {
@@ -357,84 +361,61 @@ const handleLogin = async () => {
         }, 300);
       }
     } else {
-      showMessage('此登录方式暂未开放');
+      showMessage('此登录方式暂未开放', { type: 'warning' });
       return;
     }
   } catch (error) {
-    let errorMessage = '登录失败';
-    if (error.reason) {
-      errorMessage = error.reason;
-    }
-    showMessage(errorMessage);
+    const errorMessage = error?.reason || error?.message || '登录失败';
+    showMessage(errorMessage, { type: 'error' });
   } finally {
     isLoggingIn.value = false;
   }
 };
 
-const sendVerificationCode = () => {
-  if (countdown.value > 0) return;
-
+const getVerificationTarget = () => {
   if (loginMethod.value === 'email') {
-    console.log('发送验证码到邮箱:', loginForm.email);
-  } else if (loginMethod.value === 'qq') {
-    console.log('发送验证码到QQ邮箱:', loginForm.qq + '@qq.com');
-  } else if (loginMethod.value === 'account') {
-    console.log('发送验证码到账号绑定邮箱');
+    return loginForm.email?.trim();
   }
+  if (loginMethod.value === 'qq') {
+    return loginForm.qq ? `${loginForm.qq}@qq.com` : '';
+  }
+  return '';
+};
 
+const startCountdown = () => {
   countdown.value = 60;
-  timer = setInterval(() => {
+  if (timer) {
+    clearInterval(timer);
+  }
+  timer = window.setInterval(() => {
     countdown.value--;
     if (countdown.value <= 0) {
       clearInterval(timer);
     }
   }, 1000);
+};
 
-  showMessage('验证码已发送');
+const sendVerificationCode = async () => {
+  if (countdown.value > 0) return;
+
+  const target = getVerificationTarget();
+  if (!target) {
+    showMessage('请先填写完整信息', { type: 'warning' });
+    return;
+  }
+
+  try {
+    await api.sendCode(target);
+    startCountdown();
+    showMessage('验证码已发送', { type: 'success' });
+  } catch (error) {
+    const errorMessage = error?.reason || error?.message || '发送验证码失败';
+    showMessage(errorMessage, { type: 'error' });
+  }
 };
 
 const onVerificationCodeInput = (e) => {
   loginForm.verificationCode = e.target.value.replace(/\D/g, '');
-};
-
-const showMessage = (message, type = 'error') => {
-  const messageEl = document.createElement('div');
-  messageEl.innerText = message;
-  messageEl.style.cssText = `
-    position: fixed;
-    top: -60px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #fff;
-    color: #333;
-    padding: 16px 24px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    transition: top 0.3s ease, opacity 0.3s ease;
-    opacity: 0;
-    min-width: 250px;
-    text-align: center;
-    font-weight: 500;
-    border-left: 4px solid ${type === 'success' ? '#67c23a' : '#f56565'};
-  `;
-
-  document.body.appendChild(messageEl);
-
-  setTimeout(() => {
-    messageEl.style.top = '20px';
-    messageEl.style.opacity = '1';
-  }, 10);
-
-  setTimeout(() => {
-    messageEl.style.top = '-60px';
-    messageEl.style.opacity = '0';
-    setTimeout(() => {
-      if (messageEl.parentNode) {
-        document.body.removeChild(messageEl);
-      }
-    }, 300);
-  }, 3000);
 };
 
 onBeforeUnmount(() => {
