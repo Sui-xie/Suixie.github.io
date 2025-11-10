@@ -1,120 +1,106 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useApi } from '../plugins/api.js'
+import { useSnackbar } from '../composables/useSnackbar.js'
 
 const isExpanded = ref(false)
 const showSubmenu = ref(false)
 const router = useRouter()
+const api = useApi()
+const { showMessage } = useSnackbar()
 
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value
-  // 关闭主面板时也关闭子菜单
   if (!isExpanded.value) {
     showSubmenu.value = false
   }
 }
 
-// 修改快速注册功能，添加验证码输入框
 async function quickRegister() {
   try {
-    const account = "zhy2347";
-    const password = "zhy@2347";
-    // 弹出输入框等待用户输入验证码
-    const code = prompt("请输入验证码:");
-    
-    // 如果用户取消输入或输入为空，则直接返回
+    const account = 'zhy2347'
+    const password = 'zhy@2347'
+    const code = prompt('请输入验证码:')
+
     if (!code) {
-      alert("验证码不能为空");
-      return;
+      showMessage('验证码不能为空', { type: 'warning' })
+      return
     }
-    
-    const result = await window.$Api.register(account, password, code);
-    if (result.status === 200) {
-      console.log('快速注册成功');
-      alert('快速注册成功');
-    }
+
+    await api.register(account, password, code)
+    showMessage('快速注册成功', { type: 'success' })
   } catch (error) {
-    console.error('注册失败:', error.reason);
-    alert(`注册失败: ${error.reason}`);
+    const reason = error?.reason || error?.message || '注册失败'
+    showMessage(`注册失败: ${reason}`, { type: 'error' })
   }
 }
 
-// 添加快速登录功能
 async function quickLogin() {
   try {
-    const account = "zhy2347";
-    const password = "zhy@2347";
-    
-    const result = await window.$Api.login(account, password);
-    if (result.status === 200) {
-      console.log('快速登录成功');
-      alert('快速登录成功');
-    }
+    const account = 'zhy2347'
+    const password = 'zhy@2347'
+    await api.login(account, password)
+    showMessage('快速登录成功', { type: 'success' })
   } catch (error) {
-    console.error('登录失败:', error.reason);
-    alert(`登录失败: ${error.reason}`);
+    const reason = error?.reason || error?.message || '登录失败'
+    showMessage(`登录失败: ${reason}`, { type: 'error' })
   }
 }
 
-// 添加验证本地登录状态功能
 const checkLoginStatus = () => {
-  const token = localStorage.getItem('userToken');
+  const token = localStorage.getItem('userToken')
   if (token) {
-    alert('本地存在登录状态');
+    showMessage('本地存在登录状态', { type: 'info' })
   } else {
-    alert('本地不存在登录状态');
+    showMessage('本地不存在登录状态', { type: 'warning' })
   }
 }
 
-// 添加空功能处理函数
 const emptyFunction = (name: string) => {
-  alert(`功能 "${name}" 暂未实现`);
+  showMessage(`功能 "${name}" 暂未实现`, { type: 'info' })
 }
 
 const debugFunctions = [
-  { 
-    name: '路由管理',
+  {
+    name: '????',
     action: () => {
       showSubmenu.value = !showSubmenu.value
     }
   },
-  { name: '发送验证码', action: sendVerificationCode },
-  { name: '快速注册测试', action: quickRegister },
-  { name: '快速登录测试', action: quickLogin },
-  { name: '验证本地登录', action: checkLoginStatus },
-  { name: '功能6', action: () => emptyFunction('功能6') },
-  { name: '功能7', action: () => emptyFunction('功能7') },
-  { name: '功能8', action: () => emptyFunction('功能8') }
+  { name: '?????', action: sendVerificationCode },
+  { name: '??????', action: quickRegister },
+  { name: '??????', action: quickLogin },
+  { name: '??????', action: checkLoginStatus },
+  { name: '??6', action: () => emptyFunction('??6') },
+  { name: '??7', action: () => emptyFunction('??7') },
+  { name: '??8', action: () => emptyFunction('??8') }
 ]
 
-// 添加发送验证码功能
 async function sendVerificationCode() {
   try {
-    const result = await window.$Api.sendCode('1298428557@qq.com')
-    if (result.status === 200) {
-      console.log('验证码发送成功:', result.code)
-      alert('验证码已发送至 1298428557@qq.com')
-    }
+    await api.sendCode('1298428557@qq.com')
+    showMessage('验证码已发送至 1298428557@qq.com', { type: 'success' })
   } catch (error) {
-    console.error('发送验证码失败:', error.reason)
-    alert(`发送失败: ${error.reason}`)
+    const reason = error?.reason || error?.message || '发送失败'
+    showMessage(`发送失败: ${reason}`, { type: 'error' })
   }
 }
 
 const submenuItems = [
-  { name: '首页', path: '/' },
-  { name: '注册', path: '/register' },
-  { name: '登录', path: '/login' },
-  { name: '恢复', path: '/recover' },
-  { name: '签名', path: '/sign' }
+  { name: '??', path: '/' },
+  { name: '??', path: '/register' },
+  { name: '??', path: '/login' },
+  { name: '??', path: '/recover' },
+  { name: '??', path: '/sign' }
 ]
 
 const navigateTo = (path: string) => {
   router.push(path)
-  // 导航后关闭面板和子菜单
   isExpanded.value = false
   showSubmenu.value = false
 }
+</script>
 </script>
 
 <template>

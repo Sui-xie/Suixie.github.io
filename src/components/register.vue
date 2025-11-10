@@ -1,61 +1,223 @@
-<script>
-import registerLogic from '/src/assets/register.js';
+<script setup>
+import { ref, reactive, computed, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router';
+import { useTheme } from '../composables/useTheme.js';
+import { useApi } from '../plugins/api.js';
+import { useSnackbar } from '../composables/useSnackbar.js';
 
-export default {
-  mixins: [registerLogic],
-  methods: {
-    // 重写 prevStep 方法以处理第一步的上一步操作
-    prevStep() {
-      // 如果在第一步，跳转到首页
-      if (this.currentStep === 0) {
-        this.$router.push('/');
-        return;
-      }
-      
-      // 如果当前是完成页面，则返回信息确认页面
-      if (this.currentStep === 7) {
-        this.currentStep = 6;
-        return;
-      }
-      
-      // 如果当前是信息确认页面且之前有QQ验证，则返回QQ验证页面
-      if (this.currentStep === 6 && this.showQqVerification) {
-        this.currentStep = 5;
-        return;
-      }
-      
-      // 如果当前是信息确认页面（无QQ号），返回QQ页面
-      if (this.currentStep === 6 && !this.showQqVerification) {
-        this.currentStep = 4;
-        return;
-      }
-      
-      // 如果当前是QQ验证页面，返回QQ页面
-      if (this.currentStep === 5) {
-        this.currentStep = 4;
-        return;
-      }
-      
-      if (this.currentStep > 0) {
-        this.animationClass = 'slide-out-back';
-        setTimeout(() => {
-          this.currentStep--;
-          this.animationClass = 'slide-in-back';
-          setTimeout(() => {
-            this.animationClass = '';
-          }, 300);
-        }, 300);
-      } else {
-        // 在第一步时点击上一步按钮显示消息
-        this.showMessage('没有上一个页面啦！');
-      }
-    }
+const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme();
+const router = useRouter();
+const api = useApi();
+const { showMessage } = useSnackbar();
+
+const currentStep = ref(0);
+const formData = reactive({
+  account: '',
+  password: '',
+  mail: '',
+  qq: '',
+  verificationCode: '',
+  qqVerificationCode: ''
+});
+const animationClass = ref('');
+const countdown = ref(0);
+const qqCountdown = ref(0);
+let timer = null;
+let qqTimer = null;
+const showPassword = ref(false);
+const isLoading = ref(false);
+
+const isFormValid = computed(() => {
+  return formData.account && formData.password && formData.mail;
+});
+
+const showQqVerification = computed(() => {
+  return formData.qq && formData.qq.trim() !== '';
+});
+
+const validateEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const sendVerificationCode = async () => {
+  if (countdown.value > 0) return;
+  if (!validateEmail(formData.mail)) {
+    showMessage('\u90ae\u7bb1\u683c\u5f0f\u4e0d\u6b63\u786e', { type: 'warning' });
+    return;
   }
-}
+  isLoading.value = true;
+  try {
+    await api.sendCode(formData.mail);
+    countdown.value = 60;
+    if (timer) {
+      clearInterval(timer);
+    }
+    timer = window.setInterval(() => {
+      countdown.value--;
+      if (countdown.value <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+    showMessage('\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\uff0c\u8bf7\u67e5\u6536\u90ae\u7bb1', { type: 'success' });
+  } catch (error) {
+    console.error('\u53d1\u9001\u9a8c\u8bc1\u7801\u5931\u8d25:', error);
+    showMessage(error.reason || error.message || '\u53d1\u9001\u9a8c\u8bc1\u7801\u5931\u8d25', { type: 'error' });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const sendQqVerificationCode = async () => {
+  if (qqCountdown.value > 0) return;
+  if (!formData.qq) {
+    showMessage('\u8bf7\u5148\u586b\u5199QQ\u53f7', { type: 'warning' });
+    return;
+  }
+  const qqEmail = `${formData.qq}@qq.com`;
+  isLoading.value = true;
+  try {
+    await api.sendCode(qqEmail);
+    qqCountdown.value = 60;
+    if (qqTimer) {
+      clearInterval(qqTimer);
+    }
+    qqTimer = window.setInterval(() => {
+      qqCountdown.value--;
+      if (qqCountdown.value <= 0) {
+        clearInterval(qqTimer);
+      }
+    }, 1000);
+    showMessage('\u9a8c\u8bc1\u7801\u5df2\u53d1\u9001\u81f3QQ\u90ae\u7bb1\uff0c\u8bf7\u67e5\u6536', { type: 'success' });
+  } catch (error) {
+    console.error('\u53d1\u9001QQ\u9a8c\u8bc1\u7801\u5931\u8d25:', error);
+    showMessage(error.reason || error.message || '\u53d1\u9001QQ\u9a8c\u8bc1\u7801\u5931\u8d25', { type: 'error' });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const nextStep = () => {
+  if (currentStep.value === 2) {
+    if (!validateEmail(formData.mail)) {
+      showMessage('邮箱格式不正确');
+      return;
+    }
+    sendVerificationCode();
+  }
+  if (currentStep.value === 4 && showQqVerification.value) {
+    currentStep.value = 5;
+    return;
+  }
+  if (currentStep.value === 5) {
+    currentStep.value = 6;
+    return;
+  }
+  if (currentStep.value === 6) {
+    handleSubmit();
+    return;
+  }
+  if (currentStep.value < 7) {
+    animationClass.value = 'slide-out';
+    setTimeout(() => {
+      currentStep.value++;
+      if (currentStep.value === 5 && !showQqVerification.value) {
+        currentStep.value = 6;
+      }
+      animationClass.value = 'slide-in';
+      setTimeout(() => {
+        animationClass.value = '';
+      }, 300);
+    }, 300);
+  }
+};
+
+const prevStep = () => {
+  if (currentStep.value === 0) {
+    router.push('/');
+    return;
+  }
+  if (currentStep.value === 7) {
+    currentStep.value = 6;
+    return;
+  }
+  if (currentStep.value === 6 && showQqVerification.value) {
+    currentStep.value = 5;
+    return;
+  }
+  if (currentStep.value === 6 && !showQqVerification.value) {
+    currentStep.value = 4;
+    return;
+  }
+  if (currentStep.value === 5) {
+    currentStep.value = 4;
+    return;
+  }
+  if (currentStep.value > 0) {
+    animationClass.value = 'slide-out-back';
+    setTimeout(() => {
+      currentStep.value--;
+      animationClass.value = 'slide-in-back';
+      setTimeout(() => {
+        animationClass.value = '';
+      }, 300);
+    }, 300);
+  } else {
+    showMessage('没有上一个页面啦！');
+  }
+};
+
+const handleSubmit = async () => {
+  isLoading.value = true;
+  try {
+    await api.register(
+      formData.account,
+      formData.password,
+      formData.verificationCode
+    );
+    showMessage('\u6ce8\u518c\u6210\u529f！', { type: 'success' });
+    currentStep.value = 7;
+  } catch (error) {
+    console.error('\u6ce8\u518c\u5931\u8d25:', error);
+    const reason = error.reason || error.message || '\u6ce8\u518c\u5931\u8d25';
+    showMessage(`\u6ce8\u518c\u5931\u8d25: ${reason}`, { type: 'error' });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const onVerificationCodeInput = (e) => {
+  formData.verificationCode = e.target.value.replace(/\D/g, '');
+};
+
+const onQqVerificationCodeInput = (e) => {
+  formData.qqVerificationCode = e.target.value.replace(/\D/g, '');
+};
+
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+};
+
+const showQqDisabledMessage = () => {
+  showMessage('存在未知问题，该功能已禁用，请直接下一步');
+};
+
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer);
+  if (qqTimer) clearInterval(qqTimer);
+});
 </script>
 
 <template>
   <div class="register-container">
+    <!-- 主题切换按钮 -->
+    <button
+      class="theme-toggle fixed"
+      @click="cycleThemePreference"
+      :title="themeToggleLabel"
+    >
+      {{ themeIcon }}
+    </button>
     <div class="progress-bar">
       <div 
         class="progress-fill" 
