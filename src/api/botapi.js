@@ -1,13 +1,13 @@
-const DEFAULT_ENDPOINT = import.meta.env.VITE_SUPPORT_BOT_ENDPOINT ?? '/api/support-bot' 
-const DEFAULT_TOKEN = import.meta.env.VITE_SUPPORT_BOT_TOKEN ?? ''
-const DEFAULT_MODEL = import.meta.env.VITE_SUPPORT_BOT_MODEL ?? 'gpt-4o-mini'
-const DEFAULT_TEMPERATURE = Number(import.meta.env.VITE_SUPPORT_BOT_TEMPERATURE ?? 0.3)
+const DEFAULT_ENDPOINT = import.meta.env.VITE_SUPPORT_BOT_ENDPOINT ?? '/api/support-bot' // 吹水机器人 API 端点
+const DEFAULT_TOKEN = import.meta.env.VITE_SUPPORT_BOT_TOKEN ?? '' // 吹水机器人 API 令牌
+const DEFAULT_MODEL = import.meta.env.VITE_SUPPORT_BOT_MODEL ?? 'gpt-4o-mini' // 吹水机器人 API 模型
+const DEFAULT_TEMPERATURE = Number(import.meta.env.VITE_SUPPORT_BOT_TEMPERATURE ?? 0.3) // 吹水机器人 API 温度
 
 export const botApi = {
-  endpoint: DEFAULT_ENDPOINT, // 吹水机器人 API 端点
-  token: DEFAULT_TOKEN, // 吹水机器人 API 令牌
-  model: DEFAULT_MODEL, // 吹水机器人 API 模型
-  temperature: DEFAULT_TEMPERATURE, // 吹水机器人 API 温度
+  endpoint: DEFAULT_ENDPOINT, // 吹水机器人 API 端点传入
+  token: DEFAULT_TOKEN, // 吹水机器人 API 令牌传入
+  model: DEFAULT_MODEL, // 吹水机器人 API 模型传入
+  temperature: DEFAULT_TEMPERATURE, // 吹水机器人 API 温度传入
   destinations: ['QQ 私信', '工单草稿', '巡检面板'] // 吹水机器人 API 目标
 }
 
