@@ -15,6 +15,28 @@ const servers = ref([
 ])
 const serverLoading = ref(false)
 
+// 封神榜相关
+import { createApiClient } from '../services/apiClient.js'
+const apiClient = createApiClient()
+const fengshenLoading = ref(false)
+const fengshenError = ref('')
+const fengshenList = ref([])
+
+const fetchFengshenList = async () => {
+  fengshenLoading.value = true
+  fengshenError.value = ''
+  try {
+    const res = await apiClient.getFengshenList()
+    fengshenList.value = res.list || []
+  } catch (err) {
+    console.error('获取封神榜失败:', err)
+    fengshenError.value = err?.reason || err?.message || '获取封神榜失败'
+    fengshenList.value = []
+  } finally {
+    fengshenLoading.value = false
+  }
+}
+
 const hitokotoContent = ref('') // 一言内容
 const hitokotoFrom = ref('') // 一言来源
 const hitokotoCache = ref([]) // 缓存的一言数据
@@ -262,12 +284,19 @@ onMounted(() => {
     // 获取服务器状态
     fetchAllServerStatus()
     
+    // 获取封神榜
+    fetchFengshenList()
+    
     // 每60秒刷新一次服务器状态（从API获取数据而不是刷新网页）
     const statusInterval = setInterval(fetchAllServerStatus, 60000)
+
+    // 每300秒刷新一次封神榜
+    const fengshenInterval = setInterval(fetchFengshenList, 300000)
     
     // 清理定时器
     onUnmounted(() => {
       clearInterval(statusInterval)
+      clearInterval(fengshenInterval)
     })
   })
 </script>
@@ -315,8 +344,8 @@ onMounted(() => {
           正在获取服务器状态...
         </div>
         <div v-else class="server-list">
-          <div 
-            v-for="server in servers" 
+          <div
+            v-for="server in servers"
             :key="server.id"
             class="server-item"
             :class="{ 'online': server.status?.online, 'offline': !server.status?.online }"
@@ -329,8 +358,8 @@ onMounted(() => {
                 </div>
               </div>
 
-              <button 
-                v-if="server.status?.online && server.status?.players?.length > 0" 
+              <button
+                v-if="server.status?.online && server.status?.players?.length > 0"
                 class="expand-button"
                 @click="toggleServerExpanded(server)"
               >
@@ -347,7 +376,7 @@ onMounted(() => {
                   </div>
                   <div class="detail-item">
                     <span class="detail-label">地图:</span>
-                    <span 
+                    <span
                       class="detail-value map-name"
                       @click="toggleMapExpanded(server)"
                       :title="server.status.map || 'N/A'"
@@ -393,8 +422,8 @@ onMounted(() => {
             
             <!-- 折叠式在线玩家列表 -->
             <div v-if="server.expanded && server.status?.online && server.status?.players?.length > 0" class="player-list">
-              <div 
-                v-for="(player, index) in server.status.players" 
+              <div
+                v-for="(player, index) in server.status.players"
                 :key="index"
                 class="player-item"
               >
@@ -410,6 +439,67 @@ onMounted(() => {
           </div>
         </div>
       </div>
+
+      <!-- 功能卡片区，只保留封神榜独立卡片 -->
+      <section class="card-grid">
+        <!-- 封神榜独立卡片 -->
+        <article class="info-card fengshen-card">
+          <header class="info-card-header">
+            <span class="info-card-icon">⚔️</span>
+            <h2 class="info-card-title">封神榜状态</h2>
+          </header>
+
+          <!-- 加载 & 错误 -->
+          <div v-if="fengshenLoading" class="info-card-body">
+            <p class="info-card-status">正在获取封神榜数据...</p>
+          </div>
+          <div v-else-if="fengshenError" class="info-card-body">
+            <p class="info-card-status error">{{ fengshenError }}</p>
+          </div>
+
+          <!-- 有数据：仅展示前若干条摘要，避免撑爆卡片 -->
+          <div v-else-if="fengshenList.length > 0" class="info-card-body fengshen-list">
+            <div
+              class="fengshen-item"
+              v-for="(item, index) in fengshenList.slice(0, 6)"
+              :key="item.uuid || item.uid || index"
+            >
+              <div class="fengshen-line">
+                <span class="fengshen-label">UUID</span>
+                <span class="fengshen-value" :title="item.uuid">{{ item.uuid || '-' }}</span>
+              </div>
+              <div class="fengshen-line">
+                <span class="fengshen-label">UID / GID</span>
+                <span class="fengshen-value">
+                  {{ item.uid || '-' }} / {{ item.gid || '-' }}
+                </span>
+              </div>
+              <div class="fengshen-line">
+                <span class="fengshen-label">QQ</span>
+                <span class="fengshen-value">{{ item.qq || '-' }}</span>
+              </div>
+              <div class="fengshen-line">
+                <span class="fengshen-label">最后登录 IP</span>
+                <span class="fengshen-value">{{ item.last_ip || '-' }}</span>
+              </div>
+            </div>
+            <p v-if="fengshenList.length > 6" class="fengshen-tip">
+              仅展示前 {{ Math.min(fengshenList.length, 6) }} 条，如需完整封神榜可前往后台或专用面板查看。
+            </p>
+          </div>
+
+          <!-- 无数据 -->
+          <div v-else class="info-card-body">
+            <p class="info-card-status">当前暂无封神记录。</p>
+          </div>
+
+          <footer class="info-card-footer">
+            <button class="info-card-link" @click.stop="fetchFengshenList">
+              刷新封神榜
+            </button>
+          </footer>
+        </article>
+      </section>
     </main>
     
     <!-- 随机一言小窗口 -->
@@ -571,7 +661,7 @@ onMounted(() => {
 
 /* 主要内容区域 */
 .main-content {
-  max-width: 800px;
+  max-width: 980px;
   margin: 0 auto;
   padding: 20px 0;
   height: calc(100vh - 120px); /* 计算内容区域高度，确保不超出视口 */
@@ -1216,6 +1306,161 @@ onMounted(() => {
   .server-meta {
     flex-direction: column;
     gap: 5px;
+  }
+}
+
+/* 信息卡片通用布局（参考联系客服） */
+.card-grid {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  padding: 16px 16px 12px;
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: default;
+  transition: all var(--transition-normal);
+}
+
+.info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-xl);
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-card-icon {
+  font-size: 1.4rem;
+}
+
+.info-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.info-card-desc {
+  margin: 4px 0 0;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.info-card-body {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.info-card-status {
+  margin: 4px 0;
+  color: var(--text-muted);
+}
+
+.info-card-status.error {
+  color: var(--error-color);
+}
+
+.info-card-footer {
+  margin-top: 4px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.info-card-link {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--link-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.info-card-link:hover {
+  background: rgba(74, 144, 226, 0.08);
+  transform: translateY(-1px);
+}
+
+/* 封神榜卡片内行样式 */
+.fengshen-card {
+  border: 1px solid rgba(148, 163, 253, 0.16);
+}
+
+.fengshen-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.fengshen-item {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--btn-secondary-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: all var(--transition-fast);
+}
+
+.fengshen-item:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.fengshen-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.78rem;
+}
+
+.fengshen-label {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.fengshen-value {
+  flex: 1;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fengshen-tip {
+  margin: 4px 2px 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-card {
+    padding: 14px;
+  }
+
+  .fengshen-line {
+    font-size: 0.76rem;
   }
 }
 

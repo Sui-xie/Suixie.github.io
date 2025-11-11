@@ -1,6 +1,6 @@
-const DEFAULT_BASE_URL = 'https://cors.sh/http://183.131.51.178:7878';
-const DEFAULT_API_KEY = 'temp_c92b19faf3cd3d6da1a958e1603d1ab0';
-const DEFAULT_TOKEN_STORAGE_KEY = 'userToken';
+const DEFAULT_BASE_URL = 'https://cors.sh/http://183.131.51.178:7878'; // 允许跨域请求
+const DEFAULT_API_KEY = 'temp_c92b19faf3cd3d6da1a958e1603d1ab0'; // 临时API密钥
+const DEFAULT_TOKEN_STORAGE_KEY = 'userToken'; // 本地存储密钥
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/;
 
@@ -262,6 +262,35 @@ export class ApiClient {
     return {
       status: 200,
       ...payload.data,
+    };
+  }
+
+  /**
+   * 获取封神榜列表
+   * GET /fsb
+   * 期望返回:
+   * {
+   *   "status": "success",
+   *   "data": [
+   *     { "uuid": "", "uid": "", "gid": "", "qq": "", "last_ip": "" }
+   *   ]
+   * }
+   */
+  async getFengshenList() {
+    const payload = await this.request('/fsb', {
+      method: 'GET',
+    });
+
+    const list = Array.isArray(payload?.data) ? payload.data : [];
+    return {
+      status: 200,
+      list: list.map((item) => ({
+        uuid: item.uuid ?? '',
+        uid: item.uid ?? '',
+        gid: item.gid ?? '',
+        qq: item.qq ?? '',
+        last_ip: item.last_ip ?? '',
+      })),
     };
   }
 }
