@@ -2,7 +2,7 @@
 import { ref, reactive, computed, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTheme } from '../composables/useTheme.js';
-import { useApi } from '../plugins/api.js';
+import { useApi } from '@/plugins/api.js';
 import { useSnackbar } from '../composables/useSnackbar.js';
 
 const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme();

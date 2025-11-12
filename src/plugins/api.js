@@ -1,10 +1,10 @@
 import { inject } from 'vue';
-import { ApiClient } from '../services/apiClient.js';
+import { createApiClient } from '@/services/apiClient.js';
 
 const API_SYMBOL = Symbol('api-client');
 
 export function createApiPlugin(options = {}) {
-  const client = new ApiClient(options);
+  const client = createApiClient(options);
 
   return {
     install(app) {

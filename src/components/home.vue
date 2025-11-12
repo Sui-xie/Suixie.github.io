@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTheme } from '../composables/useTheme.js'
+import { useTheme } from '@/composables/useTheme.js'
 import '../assets/register.css'
 
 const router = useRouter()
@@ -16,7 +16,7 @@ const servers = ref([
 const serverLoading = ref(false)
 
 // 封神榜相关
-import { createApiClient } from '../services/apiClient.js'
+import { createApiClient } from '@/services/apiClient.js'
 const apiClient = createApiClient()
 const fengshenLoading = ref(false)
 const fengshenError = ref('')

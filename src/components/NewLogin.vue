@@ -228,7 +228,7 @@
 <script setup>
 import { ref, reactive, onBeforeUnmount } from 'vue';
 import { useTheme } from '../composables/useTheme.js';
-import { useApi } from '../plugins/api.js';
+import { useApi } from '@/plugins/api.js';
 import { useSnackbar } from '../composables/useSnackbar.js';
 
 const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme();
