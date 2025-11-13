@@ -1,5 +1,13 @@
+// HTTP客户端模块 - 处理所有HTTP请求的核心模块
+
 import { ApiError } from '@/core/errors.js';
 
+/**
+ * 标准化基础URL
+ * 确保URL以斜杠结尾，便于后续路径拼接
+ * @param {string} baseUrl - 基础URL
+ * @returns {string} 标准化的基础URL
+ */
 function normalizeBaseUrl(baseUrl) {
   if (!baseUrl) {
     return '';
@@ -7,13 +15,26 @@ function normalizeBaseUrl(baseUrl) {
   return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 }
 
+/**
+ * 构建完整的请求URL
+ * 将基础URL、路径和查询参数拼接成完整的URL
+ * @param {string} baseUrl - 基础URL
+ * @param {string} path - 请求路径
+ * @param {Object} searchParams - 查询参数对象
+ * @returns {string} 完整的请求URL
+ */
 function buildUrl(baseUrl, path, searchParams) {
+  // 确保路径以斜杠开头
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  
+  // 使用URL构造函数构建完整URL
   const url = new URL(normalizedPath, baseUrl);
 
+  // 处理查询参数
   if (searchParams && Object.keys(searchParams).length > 0) {
     const params = new URLSearchParams();
     Object.entries(searchParams).forEach(([key, value]) => {
+      // 过滤掉undefined和null值
       if (value !== undefined && value !== null) {
         params.append(key, value);
       }
@@ -27,56 +48,96 @@ function buildUrl(baseUrl, path, searchParams) {
   return url.toString();
 }
 
+/**
+ * 解析JSON响应数据
+ * 处理响应解析失败的情况，提供友好的错误信息
+ * @param {Response} response - Fetch API响应对象
+ * @returns {Promise<Object>} 返回解析后的数据
+ * @throws {ApiError} 当响应格式无效时抛出错误
+ */
 async function parseJson(response) {
   try {
     return await response.json();
   } catch {
+    // 解析失败时抛出API错误
     throw new ApiError('Invalid server response', { status: response.status || 0 });
   }
 }
 
+/**
+ * 创建HTTP客户端
+ * 提供统一的HTTP请求接口，处理请求头、错误处理等
+ * @param {Object} options - 配置选项
+ * @param {string} options.baseUrl - API基础URL
+ * @param {string} options.apiKey - API访问密钥
+ * @returns {Object} HTTP客户端对象
+ */
 export function createHttpClient({ baseUrl, apiKey }) {
+  // 标准化基础URL
   const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
 
   return {
+    /**
+     * 发送HTTP请求
+     * @param {string} path - 请求路径
+     * @param {Object} options - 请求选项
+     * @param {string} options.method - HTTP方法，默认为GET
+     * @param {Object} options.body - 请求体数据
+     * @param {Object} options.searchParams - URL查询参数
+     * @param {Object} options.headers - 自定义请求头
+     * @returns {Promise<Object>} 返回响应数据
+     * @throws {ApiError} 当请求失败时抛出错误
+     */
     async request(path, { method = 'GET', body, searchParams, headers: customHeaders } = {}) {
+      // 构建请求头，包含API密钥和自定义头
       const headers = new Headers({
-        'x-cors-api-key': apiKey,
-        ...customHeaders,
+        'x-cors-api-key': apiKey,  // CORS代理所需的API密钥
+        ...customHeaders,           // 合并自定义请求头
       });
 
+      // 处理请求体
       let payloadBody;
       if (body !== undefined) {
+        // 设置内容类型为JSON
         headers.set('Content-Type', 'application/json');
+        // 序列化请求体
         payloadBody = JSON.stringify(body);
       }
 
+      // 构建完整的请求URL
       const url = buildUrl(normalizedBaseUrl, path, searchParams);
 
       try {
+        // 发送HTTP请求
         const response = await fetch(url, {
           method,
           headers,
           body: payloadBody,
         });
 
+        // 解析响应数据
         const payload = await parseJson(response);
 
+        // 检查响应状态
         if (!response.ok || payload.status !== 'success') {
+          // 请求失败时抛出API错误
           throw new ApiError(
             payload?.reason || response.statusText || 'Request failed',
             {
-              status: response.status,
-              payload,
+              status: response.status,    // HTTP状态码
+              payload,                    // 响应数据
             },
           );
         }
 
+        // 返回成功的响应数据
         return payload;
       } catch (error) {
+        // 区分API错误和网络错误
         if (error instanceof ApiError) {
           throw error;
         }
+        // 网络错误或服务器不可用
         throw new ApiError('Network error or server unavailable');
       }
     },
