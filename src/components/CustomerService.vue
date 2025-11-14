@@ -8,35 +8,75 @@
       {{ themeIcon }}
     </button>
 
+    <!-- 新增页面头部动画 -->
+    <div class="page-header">
+      <div class="header-bg-animation"></div>
+      <div class="header-content">
+        <h1 class="page-title">客户支持中心</h1>
+        <p class="page-subtitle">我们随时为您提供帮助</p>
+      </div>
+    </div>
+
     <section class="support-hero">
       <div class="hero-main">
-        <p class="eyebrow">SUÌXIE · 自托管客服</p>
-        <h1>有事就喊我，客服和运维都是我</h1>
-        <p>
+        <div class="hero-header">
+          <p class="eyebrow">SUÌXIE · 自托管客服</p>
+          <h1 class="hero-title">有事就喊我，客服和运维都是我</h1>
+          <p class="hero-description">
           我盯着服务器状态面板，也守着 {{ manualServiceQQ }} 这个 QQ 号。掉线、补丁、账号、节点调整——你只要告诉我，剩下的我和机器人一起接手。
-        </p>
-        <ul class="badge-list">
-          <li v-for="badge in badges" :key="badge">{{ badge }}</li>
-        </ul>
+          </p>
+        </div>
+        <div class="hero-features">
+          <ul class="badge-list">
+            <li v-for="badge in badges" :key="badge" class="badge-item">
+              <span class="badge-icon">✓</span>
+              {{ badge }}
+            </li>
+          </ul>
+        </div>
         <div class="hero-actions">
-          <button class="btn primary" @click="openManualService">立即联系 QQ</button>
-          <button class="btn outline" @click="focusBotComposer">和机器人试跑</button>
-          <button class="text-link" @click="goHome">返回主页</button>
+          <button class="btn primary btn-contact" @click="openManualService">
+            <span class="btn-icon">💬</span>
+            立即联系 QQ
+          </button>
+          <button class="btn outline btn-bot" @click="focusBotComposer">
+            <span class="btn-icon">🤖</span>
+            和机器人试跑
+          </button>
+          <button class="text-link btn-home" @click="goHome">
+            <span class="btn-icon">←</span>
+            返回主页
+          </button>
         </div>
       </div>
       <div class="hero-aside">
-        <div class="qq-card">
-          <p class="label">人工客服 QQ</p>
-          <strong>{{ manualServiceQQ }}</strong>
-          <small>全节点维护 · 单线程服务</small>
+        <div class="contact-card qq-card">
+          <div class="card-header">
+            <div class="card-icon">👨‍💻</div>
+            <div class="card-title-area">
+              <p class="label">人工客服 QQ</p>
+              <strong class="qq-number">{{ manualServiceQQ }}</strong>
+            </div>
+          </div>
+          <div class="card-content">
+            <small class="service-info">全节点维护 · 单线程服务</small>
+            <div class="availability-indicator">
+              <span class="status-dot online"></span>
+              <span class="status-text">在线服务</span>
+            </div>
+          </div>
+
         </div>
-        <div class="status-grid">
+        <div class="status-dashboard">
+          <h3 class="dashboard-title">服务状态</h3>
+          <div class="status-grid">
           <article v-for="signal in statusSignals" :key="signal.label" class="status-card">
-            <strong>{{ signal.value }}</strong>
-            <span>{{ signal.label }}</span>
-            <small>{{ signal.meta }}</small>
+            <div class="status-value">{{ signal.value }}</div>
+            <div class="status-label">{{ signal.label }}</div>
+            <div class="status-meta">{{ signal.meta }}</div>
           </article>
         </div>
+      </div>
       </div>
     </section>
 
@@ -610,6 +650,345 @@ const handleBotSend = async () => {
   }
   100% {
     background-position: 60% 60%;
+  }
+}
+
+/* 新增优化样式 */
+
+/* 页面头部动画 */
+.page-header {
+  position: relative;
+  text-align: center;
+  padding: 60px 20px 40px;
+  margin-bottom: 40px;
+  overflow: hidden;
+}
+
+.header-bg-animation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--accent-soft) 0%, transparent 50%);
+  animation: headerFloat 6s ease-in-out infinite;
+  z-index: -1;
+}
+
+@keyframes headerFloat {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-10px) scale(1.02); }
+}
+
+.page-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  margin: 0 0 16px;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--text-primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.page-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin: 0;
+  opacity: 0.9;
+}
+
+/* 英雄区域优化 */
+.hero-header {
+  margin-bottom: 32px;
+}
+
+.hero-title {
+  font-size: clamp(2.2rem, 4vw, 3.1rem);
+  line-height: 1.2;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.hero-description {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+.hero-features {
+  margin: 32px 0;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--tag-bg);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.badge-item:hover {
+  transform: translateX(5px);
+  background: var(--accent-soft);
+}
+
+.badge-icon {
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+/* 按钮优化 */
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 32px;
+  align-items: center;
+}
+
+.btn {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn-icon {
+  margin-right: 8px;
+  font-size: 1.1rem;
+}
+
+.btn-contact {
+  background: linear-gradient(135deg, var(--accent) 0%, #357abd 100%);
+  box-shadow: 0 15px 35px rgba(74, 144, 226, 0.3);
+}
+
+.btn-contact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(74, 144, 226, 0.4);
+}
+
+.btn-bot {
+  border: 2px solid var(--card-outline);
+  background: transparent;
+}
+
+.btn-bot:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.btn-home {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-home:hover {
+  transform: translateX(-5px);
+}
+
+/* 联系卡片优化 */
+.contact-card {
+  padding: 28px;
+  border-radius: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-outline);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+}
+
+.contact-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  background: var(--accent-soft);
+  padding: 12px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-title-area {
+  flex: 1;
+}
+
+.qq-number {
+  font-size: 2.2rem;
+  color: var(--accent);
+  margin: 8px 0;
+  font-weight: 700;
+}
+
+.service-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.availability-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* 状态仪表板优化 */
+.status-dashboard {
+  margin-top: 24px;
+}
+
+.dashboard-title {
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.status-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-outline);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.status-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.status-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.status-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .page-header {
+    padding: 40px 20px 30px;
+  }
+  
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn {
+    justify-content: center;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .contact-card {
+    padding: 20px;
+  }
+  
+  .qq-number {
+    font-size: 1.8rem;
   }
 }
 </style>
