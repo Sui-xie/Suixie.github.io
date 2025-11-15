@@ -6,6 +6,10 @@ export const API_DEFAULTS = {
   port: undefined,
   apiKey: '',
   tokenStorageKey: 'userToken',
+  displayNameStorageKey: 'userDisplayName',
+  loginTimestampStorageKey: 'userLoginAt',
+  loginMaxAgeMs: 3 * 24 * 60 * 60 * 1000,
+  preLoginMessageKey: 'preLoginMsg',
 };
 
 // 邮箱格式验证正则表达式

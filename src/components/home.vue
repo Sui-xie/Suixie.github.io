@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted } from 'vue'
+import { onMounted, ref, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '@/composables/useTheme.js'
+import { API_DEFAULTS } from '@/core/constants.js'
 import '../assets/register.css'
 
 const router = useRouter()
@@ -45,7 +46,7 @@ const currentCacheIndex = ref(-1) // 当前显示的缓存索引
 // 功能按钮数据
 const features = ref([
   { id: 0, title: '每日签到', path: 'sign', icon: '📅' },
-  { id: 1, title: '获取绑定码', path: 'bindCode', icon: '🔐' },
+  { id: 1, title: '幽柠规则', path: 'bindCode', icon: '📜' },
   { id: 2, title: '找回密码', path: 'recover', icon: '🔑' },
   { id: 3, title: '联系客服', path: 'support', icon: '🆘' }
 ])
@@ -53,6 +54,47 @@ const features = ref([
 // 导航到指定路径
 const navigateTo = (path: string) => {
   router.push(`/${path}`)
+}
+
+const tokenKey = API_DEFAULTS.tokenStorageKey
+const nameKey = API_DEFAULTS.displayNameStorageKey
+const tsKey = API_DEFAULTS.loginTimestampStorageKey
+const maxAge = API_DEFAULTS.loginMaxAgeMs
+const userId = ref<string | null>(null)
+const userName = ref<string | null>(null)
+const isLoggedIn = computed(() => !!userId.value)
+const parseJwtSub = (token: string) => {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
+    return payload.sub ?? null
+  } catch {
+    return null
+  }
+}
+const syncAuth = () => {
+  const t = localStorage.getItem(tokenKey) || ''
+  const atStr = localStorage.getItem(tsKey)
+  const at = atStr ? parseInt(atStr) : 0
+  const expired = !at || Date.now() - at > maxAge
+  if (expired) {
+    localStorage.removeItem(tokenKey)
+    localStorage.removeItem(nameKey)
+    localStorage.removeItem(tsKey)
+    userId.value = null
+    userName.value = null
+    return
+  }
+  userId.value = t ? parseJwtSub(t) : null
+  userName.value = localStorage.getItem(nameKey)
+}
+const logout = () => {
+  localStorage.removeItem(tokenKey)
+  localStorage.removeItem(nameKey)
+  localStorage.removeItem(tsKey)
+  syncAuth()
+  router.push('/')
 }
 
 // 切换主题模式 - 添加扩散动效
@@ -286,6 +328,11 @@ onMounted(() => {
     
     // 获取封神榜
     fetchFengshenList()
+    syncAuth()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === tokenKey) syncAuth()
+    }
+    window.addEventListener('storage', onStorage)
     
     // 每60秒刷新一次服务器状态（从API获取数据而不是刷新网页）
     const statusInterval = setInterval(fetchAllServerStatus, 60000)
@@ -297,6 +344,7 @@ onMounted(() => {
     onUnmounted(() => {
       clearInterval(statusInterval)
       clearInterval(fengshenInterval)
+      window.removeEventListener('storage', onStorage as any)
     })
   })
 </script>
@@ -311,14 +359,19 @@ onMounted(() => {
           <img src="/vite.svg" alt="Logo" class="logo-icon">
           <span class="logo-text">幽柠之域</span>
         </div>
-        <div class="logo-subtitle">网站98%为ai创作</div>
       </div>
       <div class="auth-buttons">
         <button class="header-btn theme-toggle" @click="toggleDarkMode" :title="themeToggleLabel">
           {{ themeIcon }}
         </button>
-        <button class="header-btn login-btn" @click="navigateTo('login')">登录</button>
-        <button class="header-btn register-btn" @click="navigateTo('register')">注册</button>
+        <template v-if="!isLoggedIn">
+          <button class="header-btn login-btn" @click="navigateTo('login')">登录</button>
+          <button class="header-btn register-btn" @click="navigateTo('register')">注册</button>
+        </template>
+        <template v-else>
+          <button class="header-btn account-btn" disabled>账号 {{ userName || userId }}</button>
+          <button class="header-btn logout-btn" @click="logout">退出</button>
+        </template>
       </div>
     </header>
     
@@ -329,7 +382,7 @@ onMounted(() => {
         <button 
           v-for="feature in features" 
           :key="feature.id"
-          class="feature-button"
+          :class="['feature-button', feature.path === 'bindCode' ? 'feature-rules' : '']"
           @click="navigateTo(feature.path)"
         >
           <div class="feature-icon">{{ feature.icon }}</div>
@@ -659,6 +712,18 @@ onMounted(() => {
   box-shadow: var(--shadow-lg);
 }
 
+.account-btn {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.logout-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
 /* 主要内容区域 */
 .main-content {
   max-width: 980px;
@@ -708,6 +773,15 @@ onMounted(() => {
 
 .feature-button:hover .feature-icon {
   transform: scale(1.1);
+}
+
+.feature-rules {
+  border: 1px solid var(--card-outline);
+}
+.feature-rules .feature-icon {
+  background: var(--accent-soft);
+  border-radius: 50%;
+  padding: 10px;
 }
 
 .feature-title {

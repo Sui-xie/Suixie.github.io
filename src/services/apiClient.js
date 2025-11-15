@@ -120,6 +120,10 @@ export class ApiClient {
     return this.services.sign(...args);
   }
 
+  signUser(...args) {
+    return this.services.signUser(...args);
+  }
+
   signWithQQ(...args) {
     return this.services.signWithQQ(...args);
   }
@@ -130,6 +134,10 @@ export class ApiClient {
 
   verifyQQBind(...args) {
     return this.services.verifyQQBind(...args);
+  }
+
+  qqLogin(...args) {
+    return this.services.qqLogin(...args);
   }
 
   // 以下是内容相关服务的代理方法

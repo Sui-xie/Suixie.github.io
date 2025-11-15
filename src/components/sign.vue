@@ -3,6 +3,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTheme } from '../composables/useTheme.js'
 import { createApiClient } from '@/services/apiClient.js'
+import { API_DEFAULTS } from '@/core/constants.js'
 
 const router = useRouter()
 const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
@@ -15,6 +16,8 @@ const isAnimating = ref(false)
 const animationDuration = ref(400)
 const signStatus = ref<null | 'success' | 'error'>(null)
 const qq = ref('')
+const isLoggedIn = ref(!!localStorage.getItem(API_DEFAULTS.tokenStorageKey))
+const useQQFlow = ref(!isLoggedIn.value)
 
 onMounted(() => {
   const storedDate = localStorage.getItem('lastSignDate')
@@ -33,17 +36,28 @@ onMounted(() => {
 })
 
 async function handleSign() {
-  if (!qq.value) {
-    showMessageWithDelay('请输入QQ号', 'error')
-    return
-  }
   try {
     const api = createApiClient()
-    const res = await api.signWithQQ(qq.value)
-    showMessageWithDelay(res.message || '签到成功', 'success')
+    if (isLoggedIn.value && !useQQFlow.value) {
+      const res = await api.signUser()
+      showMessageWithDelay(res.message || '签到成功', 'success')
+    } else {
+      if (!qq.value) {
+        showMessageWithDelay('请输入QQ号', 'error')
+        return
+      }
+      const res = await api.signWithQQ(qq.value)
+      showMessageWithDelay(res.message || '签到成功', 'success')
+    }
   } catch (err: any) {
     const reason = err?.reason || err?.message || '签到失败'
-    showMessageWithDelay(reason, 'error')
+    if (/not found/i.test(String(reason))) {
+      useQQFlow.value = true
+      signStatus.value = null
+      showMessage.value = false
+    } else {
+      showMessageWithDelay(reason, 'error')
+    }
   }
 }
 
@@ -75,10 +89,10 @@ function showMessageWithDelay(msg: string, status: 'success' | 'error') {
       {{ themeIcon }}
     </button>
     <div class="form-container">
-      <router-link class="back-btn" to="/">返回首页</router-link>
+      <router-link class="text-link btn-home" to="/"><span class="btn-icon">←</span> 返回首页</router-link>
       <div :class="['form-step', animationClass]">
         <h2>每日签到</h2>
-      <div class="input-group" v-if="!showMessage">
+      <div class="input-group" v-if="!showMessage && (useQQFlow || !isLoggedIn)">
         <label for="qq">QQ号</label>
         <input id="qq" v-model="qq" type="text" placeholder="请输入QQ号" />
       </div>
@@ -228,12 +242,5 @@ function showMessageWithDelay(msg: string, status: 'success' | 'error') {
 }
 </style>
 
-.back-btn {
-  margin-bottom: 12px;
-  background: var(--btn-secondary-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 8px 12px;
-}
+/* back button uses global .text-link .btn-home .btn-icon */
 

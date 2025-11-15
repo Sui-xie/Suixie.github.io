@@ -2,10 +2,12 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { createApiClient } from '@/services/apiClient.js'
+import { useTheme } from '@/composables/useTheme.js'
 
 const qq = ref('')
 const result = ref('')
 const loading = ref(false)
+const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
 
 const fetchProfile = async () => {
   if (!qq.value) {
@@ -28,6 +30,13 @@ const fetchProfile = async () => {
 
 <template>
   <div class="container">
+    <button
+      class="theme-toggle fixed"
+      @click="cycleThemePreference"
+      :title="themeToggleLabel"
+    >
+      {{ themeIcon }}
+    </button>
     <h2>找回密码</h2>
     <p class="desc">通过QQ查询账号资料以辅助找回。</p>
     <div class="input-group">
@@ -36,7 +45,7 @@ const fetchProfile = async () => {
     </div>
     <button class="action" @click="fetchProfile" :disabled="loading">{{ loading ? '查询中...' : '查询资料' }}</button>
     <pre v-if="result" class="result">{{ result }}</pre>
-    <router-link class="back-btn" to="/">返回首页</router-link>
+    <router-link class="text-link btn-home" to="/"><span class="btn-icon">←</span> 返回首页</router-link>
   </div>
   
 </template>
@@ -47,6 +56,8 @@ const fetchProfile = async () => {
   margin: 80px auto;
   padding: 20px;
 }
+.theme-toggle.fixed { width: 48px; height: 48px; font-size: 1.4rem; background-color: #e9ecef; color: #333; position: fixed; top: 18px; right: 24px; border-radius: 50%; border: none; z-index: 20; cursor: pointer; }
+[data-theme='dark'] .theme-toggle.fixed { background-color: #343a40; color: #f8f9fa; }
 
 .desc { color: var(--text-muted); margin-bottom: 12px; }
 
@@ -82,6 +93,6 @@ const fetchProfile = async () => {
   border-radius: 8px;
 }
 
-.back-btn { display: inline-block; margin-top: 12px; background: var(--btn-secondary-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; }
+/* back button uses global .text-link .btn-home .btn-icon */
 </style>
 const router = useRouter()

@@ -125,6 +125,7 @@ export function createHttpClient({ baseUrl, apiKey }) {
           method,
           headers,
           body: payloadBody,
+          credentials: 'same-origin',
         });
 
         // 解析响应数据

@@ -108,6 +108,11 @@ export function createAuthService({ http, tokenStore }) {
       };
     },
 
+    async signUser() {
+      const payload = await http.request('/user/sign', { method: 'GET' });
+      return { status: 200, message: payload.result || 'Sign successful' };
+    },
+
     async signWithQQ(qq) {
       if (!qq) {
         throw new ApiError('Missing qq', { status: 400 });
@@ -142,6 +147,17 @@ export function createAuthService({ http, tokenStore }) {
         searchParams: { code },
       });
       return { status: 200, qq: payload.qq };
+    },
+
+    async qqLogin(qq, code) {
+      if (!qq) throw new ApiError('Missing qq', { status: 400 });
+      if (!code) throw new ApiError('Missing code', { status: 400 });
+      const payload = await http.request('/qqLogin', {
+        method: 'GET',
+        searchParams: { qq, code },
+      });
+      if (payload.token) tokenStore?.write(payload.token);
+      return { status: 200, token: payload.token };
     },
   };
 }
