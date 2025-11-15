@@ -54,7 +54,7 @@
           <div class="card-header">
             <div class="card-icon">👨‍💻</div>
             <div class="card-title-area">
-              <p class="label">人工客服 QQ</p>
+              <p class="label">客服K桑QQ</p>
               <strong class="qq-number">{{ manualServiceQQ }}</strong>
             </div>
           </div>
@@ -137,19 +137,7 @@
       </div>
     </section>
 
-    <section class="faq-shelf">
-      <div class="faq-intro">
-        <h2>常见问题先写在这里</h2>
-        <p>找不到答案就留言，KSNAG 会记下关键字，我上线后第一时间处理。</p>
-      </div>
-      <div class="faq-list">
-        <article v-for="faq in faqs" :key="faq.title" class="faq-card">
-          <h3>{{ faq.title }}</h3>
-          <p>{{ faq.answer }}</p>
-          <button class="text-link" @click="openManualService">继续问我 →</button>
-        </article>
-      </div>
-    </section>
+    
   </div>
 </template>
 
@@ -204,20 +192,7 @@ const statusSignals = [
   { label: '机器人命中', value: '92%', meta: 'FAQ 覆盖' }
 ]
 
-const faqs = [
-  {
-    title: '账号怎么绑定？',
-    answer: '进入「获取绑定码」，复制后在游戏里粘贴提交，控制台显示成功即完成签收。'
-  },
-  {
-    title: '充值未到账怎么办？',
-    answer: '截图付款记录发给我，或让 KSNAG 生成工单，我会在 10 分钟内核实。'
-  },
-  {
-    title: '延迟太高如何排查？',
-    answer: '告诉我所在地区、运营商和时间段，我会推送经过自测的备用节点。'
-  }
-]
+ 
 
 const chatHistory = ref([
   {
@@ -586,31 +561,6 @@ const handleBotSend = async () => {
   margin-top: 8px;
 }
 
-.faq-shelf {
-  margin-top: 50px;
-  padding: 32px;
-  border-radius: 32px;
-  background: var(--faq-card-bg);
-  border: 1px solid var(--faq-border);
-  box-shadow: 0 25px 60px rgba(20, 40, 80, 0.08);
-}
-
-.faq-list {
-  margin-top: 24px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.faq-card {
-  background: var(--card-bg);
-  border-radius: 20px;
-  padding: 18px;
-  border: 1px solid var(--faq-border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 
 .theme-toggle.fixed {
   width: 48px;
