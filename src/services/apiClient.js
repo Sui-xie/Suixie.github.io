@@ -120,6 +120,18 @@ export class ApiClient {
     return this.services.sign(...args);
   }
 
+  signWithQQ(...args) {
+    return this.services.signWithQQ(...args);
+  }
+
+  sendQQBindCode(...args) {
+    return this.services.sendQQBindCode(...args);
+  }
+
+  verifyQQBind(...args) {
+    return this.services.verifyQQBind(...args);
+  }
+
   // 以下是内容相关服务的代理方法
 
   /**

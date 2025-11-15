@@ -2,10 +2,10 @@
 
 // API默认配置常量
 export const API_DEFAULTS = {
-  baseUrl: 'https://cors.sh/http://183.131.51.178:7878',  // 后端API基础URL（使用CORS代理）
-  port: undefined,                                         // 默认端口（未设置）
-  apiKey: 'temp_c92b19faf3cd3d6da1a958e1603d1ab0',       // API访问密钥
-  tokenStorageKey: 'userToken',                          // 本地存储中token的键名
+  baseUrl: '/api',
+  port: undefined,
+  apiKey: '',
+  tokenStorageKey: 'userToken',
 };
 
 // 邮箱格式验证正则表达式

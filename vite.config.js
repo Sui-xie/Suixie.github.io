@@ -20,5 +20,12 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',  // 监听所有网络接口，允许外部访问
     port: 3000,       // 开发服务器端口
+    proxy: {
+      '/api': {
+        target: 'http://183.131.51.178:7878',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      }
+    }
   }
 })

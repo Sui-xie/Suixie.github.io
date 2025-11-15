@@ -107,5 +107,41 @@ export function createAuthService({ http, tokenStore }) {
         message: 'Sign successful',
       };
     },
+
+    async signWithQQ(qq) {
+      if (!qq) {
+        throw new ApiError('Missing qq', { status: 400 });
+      }
+      const payload = await http.request('/signWithQQ', {
+        method: 'GET',
+        searchParams: { qq },
+      });
+      return {
+        status: 200,
+        message: payload.result || 'Sign successful',
+      };
+    },
+
+    async sendQQBindCode(qq) {
+      if (!qq) {
+        throw new ApiError('Missing qq', { status: 400 });
+      }
+      await http.request('/sendQQBindCode', {
+        method: 'GET',
+        searchParams: { qq },
+      });
+      return { status: 200, message: 'Code sent' };
+    },
+
+    async verifyQQBind(code) {
+      if (!code) {
+        throw new ApiError('Missing code', { status: 400 });
+      }
+      const payload = await http.request('/verCode4Bind', {
+        method: 'GET',
+        searchParams: { code },
+      });
+      return { status: 200, qq: payload.qq };
+    },
   };
 }

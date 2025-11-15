@@ -1,24 +1,44 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { createApiClient } from '@/services/apiClient.js'
 
-const router = useRouter();
+const qq = ref('')
+const status = ref('')
+const loading = ref(false)
 
-const checkToken = () => {
-  const token = localStorage.getItem('userToken');
-  if (token) {
-    alert("你都注册了，直接去服务器里用账号密码就能登录了嘛");
-    router.push('/');
-  } else {
-    // 如果没有token，引导用户去登录
-    alert("没有查到的登录记录哦~如果你已经注册了，直接使用账号密码就可以登录了呢！如果还没注册，等会就会送你去注册哦");
-    router.push('/register');
+const sendCode = async () => {
+  if (!qq.value) {
+    status.value = '请输入QQ号'
+    return
   }
-};
+  loading.value = true
+  status.value = ''
+  try {
+    const api = createApiClient()
+    await api.sendQQBindCode(qq.value)
+    status.value = '验证码已发送至您绑定的QQ邮箱（qq@qq.com）'
+  } catch (err) {
+    status.value = err?.reason || err?.message || '发送失败'
+  } finally {
+    loading.value = false
+  }
+}
+
+const goHome = () => {
+  router.push('/')
+}
 </script>
 
 <template>
   <div class="container">
-    <button @click="checkToken" class="token-button">点这里获取绑定码</button>
+    <div class="input-group">
+      <label for="qq">QQ号</label>
+      <input id="qq" v-model="qq" type="text" placeholder="请输入QQ号" />
+    </div>
+    <button @click="sendCode" class="token-button" :disabled="loading">{{ loading ? '发送中...' : '获取绑定码' }}</button>
+    <p v-if="status" class="status">{{ status }}</p>
+    <router-link class="back-btn" to="/">返回首页</router-link>
   </div>
 </template>
 
@@ -28,6 +48,7 @@ const checkToken = () => {
   justify-content: center;
   align-items: center;
   padding: 20px;
+  flex-direction: column;
 }
 
 .token-button {
@@ -52,6 +73,35 @@ const checkToken = () => {
 
 .token-button:active {
   transform: translateY(0);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.input-group input {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
+.status {
+  margin-top: 12px;
+  color: var(--text-primary);
+}
+
+.back-btn {
+  margin-top: 12px;
+  background: var(--btn-secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
 }
 
 /* 移动端适配 */
@@ -79,3 +129,4 @@ const checkToken = () => {
   }
 }
 </style>
+const router = useRouter()

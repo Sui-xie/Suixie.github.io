@@ -26,9 +26,17 @@ function normalizeBaseUrl(baseUrl) {
 function buildUrl(baseUrl, path, searchParams) {
   // 确保路径以斜杠开头
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  
-  // 使用URL构造函数构建完整URL
-  const url = new URL(normalizedPath, baseUrl);
+
+  // 支持相对基本路径（例如 '/api'）
+  let full = '';
+  if (!baseUrl) {
+    full = normalizedPath;
+  } else if (/^https?:\/\//i.test(baseUrl)) {
+    full = new URL(normalizedPath, baseUrl).toString();
+  } else {
+    const base = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    full = `${base}${normalizedPath}`;
+  }
 
   // 处理查询参数
   if (searchParams && Object.keys(searchParams).length > 0) {
@@ -41,11 +49,11 @@ function buildUrl(baseUrl, path, searchParams) {
     });
     const queryString = params.toString();
     if (queryString) {
-      url.search = queryString;
+      full = `${full}?${queryString}`;
     }
   }
 
-  return url.toString();
+  return full;
 }
 
 /**
@@ -89,11 +97,15 @@ export function createHttpClient({ baseUrl, apiKey }) {
      * @throws {ApiError} 当请求失败时抛出错误
      */
     async request(path, { method = 'GET', body, searchParams, headers: customHeaders } = {}) {
-      // 构建请求头，包含API密钥和自定义头
+      // 构建请求头
       const headers = new Headers({
-        'x-cors-api-key': apiKey,  // CORS代理所需的API密钥
-        ...customHeaders,           // 合并自定义请求头
+        ...customHeaders,
       });
+      headers.set('Accept', 'application/json');
+      // 仅在使用 cors.sh 代理时附加 API 密钥请求头
+      if (apiKey && normalizedBaseUrl.includes('cors.sh')) {
+        headers.set('x-cors-api-key', apiKey);
+      }
 
       // 处理请求体
       let payloadBody;
@@ -119,7 +131,8 @@ export function createHttpClient({ baseUrl, apiKey }) {
         const payload = await parseJson(response);
 
         // 检查响应状态
-        if (!response.ok || payload.status !== 'success') {
+        const successStatuses = new Set(['success', 'successed']);
+        if (!response.ok || !successStatuses.has(payload.status)) {
           // 请求失败时抛出API错误
           throw new ApiError(
             payload?.reason || response.statusText || 'Request failed',
