@@ -287,8 +287,6 @@ const handleBotSend = async () => {
   background: var(--body-bg);
   font-family: 'Poppins', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   color: var(--text-primary);
-  background-size: 180% 180%;
-  animation: bodyWave 18s ease-in-out infinite alternate;
   transition: background 0.6s ease;
 }
 
@@ -594,14 +592,7 @@ const handleBotSend = async () => {
   }
 }
 
-@keyframes bodyWave {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 60% 60%;
-  }
-}
+
 
 /* 新增优化样式 */
 
