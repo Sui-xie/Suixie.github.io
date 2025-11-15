@@ -50,9 +50,8 @@
             <button
                 class="method-btn"
                 :class="{ active: loginMethod === 'qq' }"
-                @click="loginMethod = 'qq'"
-                disabled>
-              QQ验证(暂未开放)
+                @click="loginMethod = 'qq'">
+              QQ验证（等柠檬开放）
             </button>
           </div>
           <div class="button-group">
@@ -228,7 +227,8 @@
 <script setup>
 import { ref, reactive, onBeforeUnmount } from 'vue';
 import { useTheme } from '../composables/useTheme.js';
-import { useApi } from '../plugins/api.js';
+import { useApi } from '@/plugins/api.js';
+import { API_DEFAULTS } from '@/core/constants.js';
 import { useSnackbar } from '../composables/useSnackbar.js';
 
 const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme();
@@ -281,18 +281,21 @@ const getDisplayName = () => {
   return '';
 };
 
-const nextStep = () => {
+const nextStep = async () => {
   if ((currentStep.value === 2 || (currentStep.value === 3 && loginMethod.value === 'account')) && !isCurrentStepValid()) {
     showMessage('请填写完整信息');
     return;
   }
 
-  if (currentStep.value === 2 && loginMethod.value !== 'account') {
+  if (currentStep.value === 2 && loginMethod.value === 'email') {
     sendVerificationCode();
+  }
+  if (currentStep.value === 2 && loginMethod.value === 'qq') {
+    await sendQQCode();
   }
 
   if ((currentStep.value === 3 && loginMethod.value !== 'account') || (currentStep.value === 4 && loginMethod.value === 'account')) {
-    console.log('验证验证码:', loginForm.verificationCode);
+    // noop
   }
 
   if (currentStep.value === 3 && loginMethod.value === 'account') {
@@ -301,7 +304,7 @@ const nextStep = () => {
   }
 
   if (currentStep.value === 3 && loginMethod.value !== 'account') {
-    handleLogin();
+    await handleLogin();
     return;
   }
 
@@ -351,6 +354,9 @@ const handleLogin = async () => {
     if (loginMethod.value === 'account') {
       const result = await api.login(loginForm.username, loginForm.password);
       if (result.status === 200) {
+        try { localStorage.setItem(API_DEFAULTS.displayNameStorageKey, loginForm.username); } catch {}
+        try { localStorage.setItem(API_DEFAULTS.loginTimestampStorageKey, String(Date.now())); } catch {}
+        showMessage('三天不登录自动退出登录账号', { type: 'info', duration: 3000 })
         animationClass.value = 'slide-out';
         setTimeout(() => {
           currentStep.value = 5;
@@ -361,8 +367,29 @@ const handleLogin = async () => {
         }, 300);
       }
     } else {
-      showMessage('此登录方式暂未开放', { type: 'warning' });
-      return;
+      if (loginMethod.value === 'qq') {
+        try {
+          const result = await api.qqLogin(loginForm.qq, loginForm.verificationCode);
+          if (result.status === 200) {
+            try { localStorage.setItem(API_DEFAULTS.displayNameStorageKey, loginForm.qq); } catch {}
+            try { localStorage.setItem(API_DEFAULTS.loginTimestampStorageKey, String(Date.now())); } catch {}
+            animationClass.value = 'slide-out';
+            setTimeout(() => {
+              currentStep.value = 5;
+              animationClass.value = 'slide-in';
+              setTimeout(() => { animationClass.value = ''; }, 300);
+            }, 300);
+          }
+        } catch (err) {
+          const msg = err?.reason || err?.message || '';
+          if (/not found/i.test(msg)) {
+            showMessage('当前未开启QQ验证码登录，请使用账号密码登录', { type: 'error' });
+          } else {
+            showMessage(msg || 'QQ登录失败', { type: 'error' });
+          }
+        }
+        return;
+      }
     }
   } catch (error) {
     const errorMessage = error?.reason || error?.message || '登录失败';
@@ -414,6 +441,22 @@ const sendVerificationCode = async () => {
   }
 };
 
+const sendQQCode = async () => {
+  if (countdown.value > 0) return;
+  if (!loginForm.qq?.trim()) {
+    showMessage('请填写QQ号', { type: 'warning' });
+    return;
+  }
+  try {
+    await api.sendQQBindCode(loginForm.qq.trim());
+    startCountdown();
+    showMessage('验证码已发送', { type: 'success' });
+  } catch (error) {
+    const errorMessage = error?.reason || error?.message || '发送验证码失败';
+    showMessage(errorMessage, { type: 'error' });
+  }
+};
+
 const onVerificationCodeInput = (e) => {
   loginForm.verificationCode = e.target.value.replace(/\D/g, '');
 };
@@ -426,3 +469,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped src="../assets/NewLogin.css"></style>
+try {
+  const preMsg = localStorage.getItem(API_DEFAULTS.preLoginMessageKey);
+  if (preMsg) {
+    showMessage(preMsg, { type: 'warning', duration: 3000 });
+    localStorage.removeItem(API_DEFAULTS.preLoginMessageKey);
+  }
+} catch {}

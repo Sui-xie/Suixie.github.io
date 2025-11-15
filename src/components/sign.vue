@@ -1,93 +1,80 @@
-<script>
+<script setup lang="ts">
+import { ref, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTheme } from '../composables/useTheme.js'
+import { createApiClient } from '@/services/apiClient.js'
+import { API_DEFAULTS } from '@/core/constants.js'
+
+const router = useRouter()
 const { themeToggleLabel, themeIcon, cycleThemePreference } = useTheme()
 
-export default {
-  name: 'Sign',
-  data() {
-    return {
-      lastSignDate: null,
-      message: '',
-      showMessage: false,
-      animationClass: '',
-      // 添加动画控制相关的响应式数据
-      isAnimating: false,
-      // 定义动画持续时间
-      animationDuration: 400,
-      // 添加签到状态
-      signStatus: null // null: 未签到, 'success': 成功, 'error': 失败
-    }
-  },
-  mounted() {
-    // 从本地存储获取上次签到日期
-    const storedDate = localStorage.getItem('lastSignDate');
-    if (storedDate) {
-      this.lastSignDate = new Date(storedDate);
-    }
-    // 实现页面首次进入时的动画效果
-    this.$nextTick(() => {
+const lastSignDate = ref<Date | null>(null)
+const message = ref('')
+const showMessage = ref(false)
+const animationClass = ref('')
+const isAnimating = ref(false)
+const animationDuration = ref(400)
+const signStatus = ref<null | 'success' | 'error'>(null)
+const qq = ref('')
+const isLoggedIn = ref(!!localStorage.getItem(API_DEFAULTS.tokenStorageKey))
+const useQQFlow = ref(!isLoggedIn.value)
+
+onMounted(() => {
+  const storedDate = localStorage.getItem('lastSignDate')
+  if (storedDate) lastSignDate.value = new Date(storedDate)
+
+  nextTick(() => {
+    setTimeout(() => {
+      isAnimating.value = true
+      animationClass.value = 'slide-in'
       setTimeout(() => {
-        this.isAnimating = true
-        this.animationClass = 'slide-in'
-        setTimeout(() => {
-          this.isAnimating = false
-          this.animationClass = ''
-        }, this.animationDuration)
-      }, 0)
-    })
-  },
-  methods: {
-    handleSign() {
-      // 修改: 添加alert提示
-      alert("骗你的，还没做好，三秒之后送你回去");
-      // 添加: 3秒后跳转到首页
-      setTimeout(() => {
-        this.$router.push('/');
-      }, 3000);
-      
-      /*
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // 检查是否已经签到过
-      if (this.lastSignDate) {
-        this.lastSignDate.setHours(0, 0, 0, 0);
-        // 如果是同一天，则不允许重复签到
-        if (this.lastSignDate.getTime() === today.getTime()) {
-          this.showMessageWithDelay('禁止重复签到', 'error');
-          return;
-        }
+        isAnimating.value = false
+        animationClass.value = ''
+      }, animationDuration.value)
+    }, 0)
+  })
+})
+
+async function handleSign() {
+  try {
+    const api = createApiClient()
+    if (isLoggedIn.value && !useQQFlow.value) {
+      const res = await api.signUser()
+      showMessageWithDelay(res.message || '签到成功', 'success')
+    } else {
+      if (!qq.value) {
+        showMessageWithDelay('请输入QQ号', 'error')
+        return
       }
-      
-      // 更新签到日期并保存到本地存储
-      this.lastSignDate = today;
-      localStorage.setItem('lastSignDate', today.toString());
-      
-      // 显示成功消息
-      this.showMessageWithDelay('签到成功！', 'success');
-      */
-    },
-    
-    showMessageWithDelay(message, status) {
-      this.message = message;
-      this.signStatus = status;
-      this.showMessage = true;
-      
-      // 3秒后开始播放动画
-      setTimeout(() => {
-        // 恢复按钮原始状态
-        this.signStatus = null;
-        this.showMessage = false;
-        // 添加离开动画，等待动画完成后才切换路由
-        this.isAnimating = true
-        this.animationClass = 'slide-out'
-        setTimeout(() => {
-          this.$router.push('/');
-        }, this.animationDuration);
-      }, 3000);
+      const res = await api.signWithQQ(qq.value)
+      showMessageWithDelay(res.message || '签到成功', 'success')
     }
-    
+  } catch (err: any) {
+    const reason = err?.reason || err?.message || '签到失败'
+    if (/not found/i.test(String(reason))) {
+      useQQFlow.value = true
+      signStatus.value = null
+      showMessage.value = false
+    } else {
+      showMessageWithDelay(reason, 'error')
+    }
   }
+}
+
+function showMessageWithDelay(msg: string, status: 'success' | 'error') {
+  message.value = msg
+  signStatus.value = status
+  showMessage.value = true
+
+  setTimeout(() => {
+    signStatus.value = null
+    showMessage.value = false
+    isAnimating.value = true
+    animationClass.value = 'slide-out'
+    setTimeout(() => {
+      router.push('/')
+    }, animationDuration.value)
+  }, 3000)
 }
 </script>
 
@@ -102,13 +89,18 @@ export default {
       {{ themeIcon }}
     </button>
     <div class="form-container">
+      <router-link class="text-link btn-home" to="/"><span class="btn-icon">←</span> 返回首页</router-link>
       <div :class="['form-step', animationClass]">
         <h2>每日签到</h2>
-        <div class="completion-message" v-if="showMessage">
-          <p>{{ message }}</p>
-          <p>即将返回首页...</p>
-        </div>
-        <div v-else>
+      <div class="input-group" v-if="!showMessage && (useQQFlow || !isLoggedIn)">
+        <label for="qq">QQ号</label>
+        <input id="qq" v-model="qq" type="text" placeholder="请输入QQ号" />
+      </div>
+      <div class="completion-message" v-if="showMessage">
+        <p>{{ message }}</p>
+        <p>即将返回首页...</p>
+      </div>
+      <div v-else>
           <p style="text-align: center; margin-bottom: 30px;">
             点击下方按钮完成今日签到
           </p>
@@ -116,9 +108,9 @@ export default {
             <button 
               class="btn btn-submit sign-button"
               :class="{ 
-                'sign-success': signStatus === 'success',
-                'sign-error': signStatus === 'error',
-                'sign-in-progress': showMessage
+              'sign-success': signStatus === 'success',
+              'sign-error': signStatus === 'error',
+              'sign-in-progress': showMessage
               }"
               @click="handleSign"
             >
@@ -216,6 +208,21 @@ export default {
   transition: all 0.3s ease;
 }
 
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.input-group input {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+  color: var(--text-primary);
+}
+
 .sign-button.sign-in-progress {
   transform: scale(1.1);
   width: 100%;
@@ -234,4 +241,6 @@ export default {
   color: var(--error-color);
 }
 </style>
+
+/* back button uses global .text-link .btn-home .btn-icon */
 
