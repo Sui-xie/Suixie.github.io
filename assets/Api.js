@@ -1,6 +1,6 @@
 class Api{
     constructor(){
-        this.base = "/api";
+        this.base = (typeof window !== 'undefined' ? window.location.origin : '') + "/api";
         this.token = localStorage.getItem('userToken') || null; // 内部存储token
         this.ApiList = {
             "test":"/status",
@@ -34,7 +34,8 @@ class Api{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'include'
             });
             
             if (response.status === 200) {
@@ -81,7 +82,8 @@ class Api{
                     type: "username",
                     identifier: account,
                     password: password
-                })
+                }),
+                credentials: 'include'
             });
             
             if (response.status === 200) {
@@ -166,7 +168,8 @@ class Api{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'include'
             });
             
             const data = await response.json();
@@ -208,7 +211,8 @@ class Api{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'include'
             });
             
             if (response.status === 200) {
@@ -258,7 +262,8 @@ class Api{
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
-                }
+                },
+                credentials: 'include'
             });
             
             if (response.status === 200) {

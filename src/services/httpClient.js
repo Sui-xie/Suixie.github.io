@@ -117,43 +117,35 @@ export function createHttpClient({ baseUrl, apiKey }) {
       }
 
       // 构建完整的请求URL
-      const url = buildUrl(normalizedBaseUrl, path, searchParams);
+      const bases = [];
+      bases.push(normalizedBaseUrl);
+      const alt = normalizedBaseUrl.replace(/\/?api\/?$/i, '/');
+      if (!bases.includes(alt)) bases.push(alt);
+      if (!bases.includes('')) bases.push('');
 
-      try {
-        // 发送HTTP请求
-        const response = await fetch(url, {
-          method,
-          headers,
-          body: payloadBody,
-          credentials: 'same-origin',
-        });
-
-        // 解析响应数据
-        const payload = await parseJson(response);
-
-        // 检查响应状态
-        const successStatuses = new Set(['success', 'successed']);
-        if (!response.ok || !successStatuses.has(payload.status)) {
-          // 请求失败时抛出API错误
-          throw new ApiError(
-            payload?.reason || response.statusText || 'Request failed',
-            {
-              status: response.status,    // HTTP状态码
-              payload,                    // 响应数据
-            },
-          );
+      for (const b of bases) {
+        const url = buildUrl(b, path, searchParams);
+        try {
+          const response = await fetch(url, {
+            method,
+            headers,
+            body: payloadBody,
+            credentials: 'include',
+          });
+          const payload = await parseJson(response);
+          const successStatuses = new Set(['success', 'successed']);
+          if (!response.ok || !successStatuses.has(payload.status)) {
+            throw new ApiError(
+              payload?.reason || response.statusText || 'Request failed',
+              { status: response.status, payload },
+            );
+          }
+          return payload;
+        } catch (error) {
+          if (error instanceof ApiError) throw error;
         }
-
-        // 返回成功的响应数据
-        return payload;
-      } catch (error) {
-        // 区分API错误和网络错误
-        if (error instanceof ApiError) {
-          throw error;
-        }
-        // 网络错误或服务器不可用
-        throw new ApiError('Network error or server unavailable');
       }
+      throw new ApiError('Invalid server response');
     },
   };
 }

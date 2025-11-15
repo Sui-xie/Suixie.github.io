@@ -11,8 +11,12 @@ const showHitokoto = ref(true) // 控制一言窗口显示
 const hitokotoCollapsed = ref(false) // 控制一言窗口是否收纳于左侧
 
 // 服务器状态相关
+const statusUrls = [
+  (typeof window !== 'undefined' ? window.location.origin : '') + '/api/status',
+  (typeof window !== 'undefined' ? window.location.origin : '') + '/status'
+]
 const servers = ref([
-  { id: 1, name: '幽柠之域', url: '/api/status', status: null, expanded: false, mapExpanded: false }
+  { id: 1, name: '幽柠之域', url: statusUrls[0], status: null, expanded: false, mapExpanded: false }
 ])
 const serverLoading = ref(false)
 
@@ -223,21 +227,21 @@ const fetchServerStatus = async (server) => {
     server.status = { online: false, message: '未配置服务器地址' }
     return
   }
-  
-  try {
-    const response = await fetch(server.url)
-    const data = await response.json()
-    
-    // 解析info字符串
-    if (data.info) {
-      server.status = parseServerInfo(data.info)
-    } else {
-      server.status = data
-    }
-  } catch (error) {
-    console.error(`获取${server.name}状态失败:`, error)
-    server.status = { online: false, message: '无法连接到服务器' }
+  for (const u of statusUrls) {
+    try {
+      const response = await fetch(u, { credentials: 'include' })
+      if (!response.ok) throw new Error(String(response.status))
+      const data = await response.json()
+      if (data.info) {
+        server.status = parseServerInfo(data.info)
+      } else {
+        server.status = data
+      }
+      server.url = u
+      return
+    } catch (_) {}
   }
+  server.status = { online: false, message: '无法连接到服务器' }
 }
 
 // 获取所有服务器状态

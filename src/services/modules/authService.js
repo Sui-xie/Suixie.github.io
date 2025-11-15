@@ -87,25 +87,9 @@ export function createAuthService({ http, tokenStore }) {
       };
     },
 
-    async sign(account) {
-      validators.username(account);
-      const token = tokenStore?.read();
-      if (!token) {
-        throw new ApiError('No token available', { status: 401 });
-      }
-
-      await http.request('/sign', {
-        method: 'GET',
-        searchParams: {
-          username: account,
-          token,
-        },
-      });
-
-      return {
-        status: 200,
-        message: 'Sign successful',
-      };
+    async sign() {
+      const payload = await http.request('/user/sign', { method: 'GET' });
+      return { status: 200, message: payload.result || 'Sign successful' };
     },
 
     async signUser() {
