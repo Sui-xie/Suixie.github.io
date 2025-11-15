@@ -12,7 +12,7 @@ const hitokotoCollapsed = ref(false) // 控制一言窗口是否收纳于左侧
 
 // 服务器状态相关
 const servers = ref([
-  { id: 1, name: '幽柠之域', url: 'http://183.131.51.178:7878/status', status: null, expanded: false, mapExpanded: false }
+  { id: 1, name: '幽柠之域', url: '/api/status', status: null, expanded: false, mapExpanded: false }
 ])
 const serverLoading = ref(false)
 
